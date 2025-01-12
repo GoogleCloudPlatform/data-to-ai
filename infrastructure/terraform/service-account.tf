@@ -70,3 +70,25 @@ resource "google_bigquery_dataset_iam_member" "data_processor_sa_bigquery_data_v
   role   = "roles/bigquery.dataViewer"
   dataset_id = google_bigquery_dataset.bus-stop-image-processing.dataset_id
 }
+
+# See https://cloud.google.com/build/docs/securing-builds/configure-user-specified-service-accounts
+resource "google_service_account" "cloud_function_build_sa" {
+  account_id   = "cloud-function-build-sa"
+  display_name = "Service Account to build the Cloud function"
+}
+
+locals {
+  member_cloud_function_build_sa = "serviceAccount:${google_service_account.cloud_function_build_sa.email}"
+  cloud_function_build_required_roles = [
+    "roles/logging.logWriter",
+    "roles/storage.objectViewer",
+    "roles/artifactregistry.writer"
+    ]
+}
+
+resource "google_project_iam_member" "cloud_function_build_sa_roles" {
+  member  = local.member_cloud_function_build_sa
+  project = var.project_id
+  for_each = toset(local.cloud_function_build_required_roles)
+  role    = each.key
+}

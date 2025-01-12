@@ -41,3 +41,13 @@ resource "google_project_service" "bigquery_connection_api" {
  service  = "bigqueryconnection.googleapis.com"
  disable_on_destroy = false
 }
+
+resource "google_project_service" "iam_api" {
+  service  = "iam.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "resourcemanager_api" {
+  service  = "cloudresourcemanager.googleapis.com"
+  disable_on_destroy = false
+}

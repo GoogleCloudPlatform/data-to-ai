@@ -16,7 +16,6 @@ resource "google_bigquery_connection" "vertex_ai_connection" {
   connection_id = "vertex_ai_connection"
   project       = var.project_id
   location      = var.bigquery_dataset_location
-  depends_on    = [google_project_service.bigquery_connection_api]
 
   cloud_resource {}
 }
@@ -68,7 +67,6 @@ resource "google_bigquery_job" "create_default_model" {
   job_id     = "create_default_model_${random_id.default_model_job_id_suffix.hex}"
   location   = var.bigquery_dataset_location
   depends_on = [
-    google_project_service.vertex_ai_api,
     time_sleep.wait_for_propagation_of_vertex_ai_connection_permission
   ]
   query {
@@ -93,7 +91,6 @@ resource "google_bigquery_job" "create_pro_model" {
   job_id     = "create_pro_model_${random_id.pro_model_job_id_suffix.hex}"
   location   = var.bigquery_dataset_location
   depends_on = [
-    google_project_service.vertex_ai_api,
     time_sleep.wait_for_propagation_of_vertex_ai_connection_permission
   ]
   query {
@@ -119,7 +116,6 @@ resource "google_bigquery_job" "create_text_embedding_model" {
   job_id     = "create_text_embedding_model_${random_id.text_embeddings_model_job_id_suffix.hex}"
   location   = var.bigquery_dataset_location
   depends_on = [
-    google_project_service.vertex_ai_api,
     time_sleep.wait_for_propagation_of_vertex_ai_connection_permission
   ]
   query {
@@ -145,7 +141,6 @@ resource "google_bigquery_job" "create_multimodal_embedding_model" {
   job_id     = "create_multimodal_embedding_model_${random_id.multimodal_embeddings_model_job_id_suffix.hex}"
   location   = var.bigquery_dataset_location
   depends_on = [
-    google_project_service.vertex_ai_api,
     time_sleep.wait_for_propagation_of_vertex_ai_connection_permission
   ]
   query {

@@ -24,7 +24,6 @@ resource "google_bigquery_connection" "image_bucket_connection" {
   connection_id = "image_bucket_connection"
   project       = var.project_id
   location      = var.bigquery_dataset_location
-  depends_on    = [google_project_service.bigquery_connection_api]
 
   cloud_resource {}
 }

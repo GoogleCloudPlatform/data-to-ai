@@ -11,25 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-terraform {
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "~> 6.15.0"
-    }
-    local = {
-      source  = "hashicorp/local"
-      version = "~> 2.5.2"
-    }
-  }
 
-  provider_meta "google" {
-    module_name = "cloud-solutions/data-platform-multimodal-v1.0"
-  }
+variable "project_id" {
+  description = "Project where all the resources will be created"
+  type        = string
 }
-
-provider "google" {
-  project = var.project_id
-  region  = var.region
-}
-

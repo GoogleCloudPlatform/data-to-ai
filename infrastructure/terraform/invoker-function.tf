@@ -32,11 +32,8 @@ resource "google_storage_bucket_object" "staged_image_process_invoker" {
 # At the moment the function needs to be manually deleted in order to be updated.
 resource "google_cloudfunctions2_function" "processing_invoker" {
   depends_on = [
+    google_project_iam_member.cloud_function_build_sa_roles,
     google_storage_bucket_object.staged_image_process_invoker,
-    google_project_service.run_api,
-    google_project_service.functions_api,
-    google_project_service.cloudbuild_api,
-    google_project_service.cloudscheduler,
     google_bigquery_routine.process_images_procedure,
     google_bigquery_routine.update_incidents_procedure
   ]
@@ -45,8 +42,9 @@ resource "google_cloudfunctions2_function" "processing_invoker" {
   location = var.region
 
   build_config {
-    runtime     = "nodejs20"
-    entry_point = "invoke-image-processing"
+    runtime         = "nodejs20"
+    entry_point     = "invoke-image-processing"
+    service_account = google_service_account.cloud_function_build_sa.id
     source {
       storage_source {
         bucket = google_storage_bucket.image_bucket.name
@@ -57,7 +55,7 @@ resource "google_cloudfunctions2_function" "processing_invoker" {
 
   service_config {
     service_account_email = google_service_account.data_processor_sa.email
-    ingress_settings = "ALLOW_INTERNAL_ONLY"
+    ingress_settings      = "ALLOW_INTERNAL_ONLY"
   }
 }
 

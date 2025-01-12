@@ -67,8 +67,22 @@ You need to have access to a Google Cloud project with an active billing account
 ### Creating infrastructure
 
 1. Clone this repo and switch to the checked out directory
-2. Designate or create a project to create all the artifacts and
-   create `infrastructure/terraform/terraform.tfvars` file with
+2. Designate or create a project to create all the artifacts
+3. Create `infrastructure/project-setup/terraform.tfvars` file with
+   the following content:
+
+```text
+project_id = "<your project id>"
+```
+4. Run Terraform scripts which will enable required APIs for this project
+
+```shell
+cd infrastructure/project-setup
+terraform init 
+terraform apply
+```
+
+5. Create `infrastructure/terraform/terraform.tfvars` file with
    the following content:
 
 ```text
@@ -81,7 +95,7 @@ deployment.
 Please check [infrastructure/terraform/variables.tf](infrastructure/terraform/variables.tf) for
 detail.
 
-3. Create infrastructure to run the demo:
+6. Create infrastructure to run the demo:
 
 ```shell
 cd infrastructure/terraform

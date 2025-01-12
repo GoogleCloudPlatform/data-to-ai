@@ -60,3 +60,4 @@ crash.*.log
 /infrastructure/terraform/functions/image-process-invoker/image-process-invoker.zip
 /infrastructure/terraform/functions/image-process-invoker/index.js
 /.cloud-env.sh
+/infrastructure/project-setup/.terraform.lock.hcl
