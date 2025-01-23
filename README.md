@@ -46,19 +46,24 @@ fully functional deployment of the solution.
 Currently, the two implementations create two independent BigQuery datasets and Cloud Storage
 buckets. This is done to be able to run the implementations independently of each other.
 
-## Getting Started with the Notebook
+## Getting Started with the Notebooks
 
-For a step-by-step walkthrough of the data processing workflow, refer to
-the [Multimodal Analysis and Search of Bus Stops](./notebooks/multimodal_analysis_search.ipynb)
-notebook. This notebook is self-sufficient and can be run independently without needing any other
-components of this repository.
+The following notebooks are provided:
 
-You can run the notebook in a Vertex AI Workbench instance, in Google Colab Enterprise, or directly
-in BigQuery Studio. The notebook assumes you have a Google Cloud project with permissions to create a Cloud
-Storage bucket. It goes through a short setup, which includes creating a BigQuery dataset, creating a BigQuery cloud resource connection, 
-and granting the resource connection's service account the necessary permissions to interact with Vertex AI models and Cloud Storage. 
-For more details on these steps, please refer to 
-[Create and set up a Cloud resource connection](https://cloud.google.com/bigquery/docs/create-cloud-resource-connection). 
+1. [Multimodal Analysis and Search of Bus Stops](./notebooks/multimodal_analysis_search.ipynb)
+notebook is a step-by-step walkthrough of the data processing workflow. This notebook is
+self-sufficient and can be run independently without needing any other components of this repository.
+2. [Evaluating Multimodal Image Search](./notebooks/multimodal_search_evaluation.ipynb)
+notebook is used to evaluate the retrieval quality of the image search implemented in the above notebook.
+It uses [DeepEval](https://docs.confident-ai.com/) LLM evaluation framework and Gemini 1.5 Pro as LLM
+judge. It includes a set of test cases to evaluate different semantic search results across different
+retrieval metrics. This notebook requires completion of the [Multimodal Analysis and Search of Bus Stops](./notebooks/multimodal_analysis_search.ipynb) notebook.
+
+You can run the notebooks in a Vertex AI Workbench instance, in Google Colab Enterprise, or directly
+in BigQuery Studio. It is assumed that you have a Google Cloud project with permissions to create a Cloud
+Storage bucket. The first notebook goes through a short setup, which includes creating a BigQuery dataset,
+creating a BigQuery cloud resource connection, and granting the resource connection's service account
+the necessary permissions to interact with Vertex AI models and Cloud Storage.
 
 ## Getting Started with the Terraform
 
