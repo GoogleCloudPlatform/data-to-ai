@@ -231,7 +231,7 @@ function:
 
 ```sql
 SELECT *
-    FROM `bus_stop_image_processing.reports`
+    FROM `bus_stop_image_processing.image_reports`
     WHERE SEARCH(description, "`broken glass`")
         # Combining text search with filtering on extracted attributes
         AND cleanliness_level < 2
@@ -350,7 +350,7 @@ WITH ranked_results_text_embeddings AS (
      keyword_search_results AS (
        SELECT
          uri, description
-       FROM `bus_stop_image_processing.reports`
+       FROM `bus_stop_image_processing.image_reports`
        WHERE SEARCH(description, "`broken glass`")
      )
 -- Combine with keyword results and boost keyword matches

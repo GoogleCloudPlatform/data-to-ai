@@ -90,16 +90,16 @@ resource "google_bigquery_table" "reports" {
 resource "random_id" "reports_search_job_id_suffix" {
   byte_length = 4
   keepers     = {
-    table_creation_itme = google_bigquery_table.reports.creation_time
+    table_creation_itme = google_bigquery_table.image_reports.creation_time
   }
 }
 
 resource "google_bigquery_job" "reports_search_index" {
   job_id     = "reports_search_index_${random_id.reports_search_job_id_suffix.hex}"
-  depends_on = [google_bigquery_table.reports]
+  depends_on = [google_bigquery_table.image_reports]
 
   query {
-    query              = "CREATE SEARCH INDEX IF NOT EXISTS reports_search_index ON `${local.fq_dataset_id}.${google_bigquery_table.reports.table_id}` (description)"
+    query              = "CREATE SEARCH INDEX IF NOT EXISTS reports_search_index ON `${local.fq_dataset_id}.${google_bigquery_table.image_reports.table_id}` (description)"
     create_disposition = ""
     write_disposition  = ""
   }
@@ -174,7 +174,7 @@ resource "google_bigquery_table" "incidents" {
       referenced_table {
         project_id = var.project_id
         dataset_id = google_bigquery_dataset.bus-stop-image-processing.dataset_id
-        table_id   = google_bigquery_table.reports.table_id
+        table_id   = google_bigquery_table.image_reports.table_id
       }
       column_references {
         referencing_column = "open_report_id"
@@ -187,7 +187,7 @@ resource "google_bigquery_table" "incidents" {
       referenced_table {
         project_id = var.project_id
         dataset_id = google_bigquery_dataset.bus-stop-image-processing.dataset_id
-        table_id   = google_bigquery_table.reports.table_id
+        table_id   = google_bigquery_table.image_reports.table_id
       }
       column_references {
         referencing_column = "resolve_report_id"
@@ -211,7 +211,7 @@ resource "google_bigquery_table" "text_embeddings" {
       referenced_table {
         project_id = var.project_id
         dataset_id = google_bigquery_dataset.bus-stop-image-processing.dataset_id
-        table_id   = google_bigquery_table.reports.table_id
+        table_id   = google_bigquery_table.image_reports.table_id
       }
       column_references {
         referencing_column = "report_id"
@@ -235,7 +235,7 @@ resource "google_bigquery_table" "multimodal_embeddings" {
       referenced_table {
         project_id = var.project_id
         dataset_id = google_bigquery_dataset.bus-stop-image-processing.dataset_id
-        table_id   = google_bigquery_table.reports.table_id
+        table_id   = google_bigquery_table.image_reports.table_id
       }
       column_references {
         referencing_column = "report_id"
