@@ -2,7 +2,7 @@
 
 [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=GITHUB_URL)
 
-This repo contains a fully functional demo to show how BigQuery can do complex processing of images
+This repo contains a fully functional demo to showcase how BigQuery can do complex processing of images
 using multimodal GenAI capabilities of Google Cloud.
 
 ## Features
@@ -15,48 +15,55 @@ using multimodal GenAI capabilities of Google Cloud.
 
 ## Use Case
 
-Imagine a large city transportation agency which is trying to improve passenger satisfaction. The
-agency would like to be notified if there are issue with cleanliness and safety of the
+Imagine a large city transportation agency which is trying to improve its passenger satisfaction. The
+agency would like to be notified if there are issues with cleanliness and safety of the
 bus stops. The city decides to install low cost outdoor facing cameras on its bus fleet and
-automatically upload pictures of the bus stops to a cloud for automatic issue detection. The city
+automatically uploads pictures of their bus stops to a cloud for automatic issue detection. The city
 also provides a customer portal to allow uploading bus stop pictures by passengers.
 
-The images should be automatically analysed and if the bus stop is found to be dirty - an incident
-is automatically created. The incident is considered to be resolved if a new image show the bus stop
-in acceptable condition.
+The images should be automatically analyzed and if the bus stop is found to be dirty - an incident
+is automatically created. The incident is considered to be resolved if a new image shows the bus stop
+to be in acceptable condition.
+
+![Incident Detection & Resolution in action](https://services.google.com/fh/files/misc/bus-stops-reel.gif)
 
 ## Implementation
 
 The code in this repo shows how images uploaded to Google Cloud Storage buckets can be
-automatically analysed without the need to build custom AI/ML models. Only simple and
-intuitive Gemini prompt and SQL code are needed to create a fully functional, scalable and secure
-implementation of a non-trivial image analysis. Additionally, it shows how vector and full text
+automatically analyzed without the need to build custom AI/ML models. Only simple and
+intuitive Gemini prompts and SQL code are needed to create a fully functional, scalable and secure
+implementation of a non-trivial image analysis. Additionally, it shows how vector and full-text
 search capabilities of BigQuery can be used to implement semantic search of images.
 
 The following is a high level architecture diagram of the solution:
 ![Architecture Diagram](docs/architecture.png)
 
 There are two implementations of the solution. One uses a Vertex AI Notebook to show the
-step-by-step
-implementation of the solution and use a set of test images to illustrate the actual image
+step-by-step implementation of the solution and uses a set of test images to illustrate the actual image
 processing. The other implementation is a set of Terraform scripts that automatically creates a
 fully functional deployment of the solution.
 
 Currently, the two implementations create two independent BigQuery datasets and Cloud Storage
 buckets. This is done to be able to run the implementations independently of each other.
 
-## Getting Started with the Notebook
+## Getting Started with the Notebooks
 
-For a step-by-step walkthrough of the data processing workflow, refer to
-the [Multimodal Analysis and Search of Bus Stops](./notebooks/multimodal_analysis_search.ipynb)
-notebook. This notebook is self-sufficient and can be run independently without needing any other
-components of this repository.
+The following notebooks are provided:
 
-You can run the notebook in a Vertex AI Workbench instance, in Google Colab Enterprise, or directly
-in BigQuery Studio. It assumes you have a Google Cloud project with permissions to create a Cloud
-Storage bucket, a BigQuery dataset and a BigQuery cloud resource connection, and to grant that
-connection's service account the Vertex AI User role in order to interact with Vertex AI models such
-as Gemini.
+1. [Multimodal Analysis and Search of Bus Stops](./notebooks/multimodal_analysis_search.ipynb)
+notebook is a step-by-step walkthrough of the data processing workflow. This notebook is
+self-sufficient and can be run independently without needing any other components of this repository.
+2. [Evaluating Multimodal Image Search](./notebooks/multimodal_search_evaluation.ipynb)
+notebook is used to evaluate the retrieval quality of the image search implemented in the above notebook.
+It uses [DeepEval](https://docs.confident-ai.com/) LLM evaluation framework and Gemini 1.5 Pro as LLM
+judge. It includes a set of test cases to evaluate different semantic search results across different
+retrieval metrics. This notebook requires completion of the [Multimodal Analysis and Search of Bus Stops](./notebooks/multimodal_analysis_search.ipynb) notebook.
+
+You can run the notebooks in a Vertex AI Workbench instance, in Google Colab Enterprise, or directly
+in BigQuery Studio. It is assumed that you have a Google Cloud project with permissions to create a Cloud
+Storage bucket. The first notebook goes through a short setup, which includes creating a BigQuery dataset,
+creating a BigQuery cloud resource connection, and granting the resource connection's service account
+the necessary permissions to interact with Vertex AI models and Cloud Storage.
 
 ## Getting Started with the Terraform
 
