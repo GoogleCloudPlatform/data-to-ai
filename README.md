@@ -130,7 +130,7 @@ project:
 * `<project-id>_-bus-stop-images` Cloud Storage bucket
 * `bus_stop_image_processing` BigQuery dataset containing:
     * `images` object table, pointing to the Cloud Storage bucket
-    * `reports` table, containing the results of the image analysis
+    * `image_reports` table, containing the results of the image analysis
     * `incidents` table, containing the automatically detected bus stops requiring attention
     * `text_embeddings` table with text embeddings of the textual descriptions of the images
     * `multimodal_embeddings` table with multimodal embeddings of the images themselves
