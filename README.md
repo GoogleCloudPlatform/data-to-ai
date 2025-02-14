@@ -152,7 +152,7 @@ There are two stored procedures which contain the logic of processing images.
 [`process_images`](/infrastructure/terraform/bigquery-routines/process-images.sql.tftpl) processes
 new images uploaded since the last time this procedure was run. It extracts several attributes 
 from the image (e.g., cleanliness level, number of people) and the generic image description 
-using a Vertex AI multimodal LLM. The result of processing is stored in the `reports` table. 
+using a Vertex AI multimodal LLM. The result of processing is stored in the `image_reports` table. 
 The description's text embedding is generated using a Vertex AI's text embedding LLM and stored 
 in the `text_embeddings` table. The procedure expects all the files to contain "stop_id" metadata 
 attribute.
