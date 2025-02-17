@@ -35,7 +35,8 @@ resource "google_cloudfunctions2_function" "processing_invoker" {
     google_project_iam_member.cloud_function_build_sa_roles,
     google_storage_bucket_object.staged_image_process_invoker,
     google_bigquery_routine.process_images_procedure,
-    google_bigquery_routine.update_incidents_procedure
+    google_bigquery_routine.update_incidents_procedure,
+    google_project_iam_member.cloud_function_build_sa_roles
   ]
   name     = "image-processing-invoker"
   project  = var.project_id

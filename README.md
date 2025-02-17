@@ -130,7 +130,7 @@ project:
 * `<project-id>_-bus-stop-images` Cloud Storage bucket
 * `bus_stop_image_processing` BigQuery dataset containing:
     * `images` object table, pointing to the Cloud Storage bucket
-    * `reports` table, containing the results of the image analysis
+    * `image_reports` table, containing the results of the image analysis
     * `incidents` table, containing the automatically detected bus stops requiring attention
     * `text_embeddings` table with text embeddings of the textual descriptions of the images
     * `multimodal_embeddings` table with multimodal embeddings of the images themselves
@@ -152,7 +152,7 @@ There are two stored procedures which contain the logic of processing images.
 [`process_images`](/infrastructure/terraform/bigquery-routines/process-images.sql.tftpl) processes
 new images uploaded since the last time this procedure was run. It extracts several attributes 
 from the image (e.g., cleanliness level, number of people) and the generic image description 
-using a Vertex AI multimodal LLM. The result of processing is stored in the `reports` table. 
+using a Vertex AI multimodal LLM. The result of processing is stored in the `image_reports` table. 
 The description's text embedding is generated using a Vertex AI's text embedding LLM and stored 
 in the `text_embeddings` table. The procedure expects all the files to contain "stop_id" metadata 
 attribute.
@@ -231,7 +231,7 @@ function:
 
 ```sql
 SELECT *
-    FROM `bus_stop_image_processing.reports`
+    FROM `bus_stop_image_processing.image_reports`
     WHERE SEARCH(description, "`broken glass`")
         # Combining text search with filtering on extracted attributes
         AND cleanliness_level < 2
@@ -350,7 +350,7 @@ WITH ranked_results_text_embeddings AS (
      keyword_search_results AS (
        SELECT
          uri, description
-       FROM `bus_stop_image_processing.reports`
+       FROM `bus_stop_image_processing.image_reports`
        WHERE SEARCH(description, "`broken glass`")
      )
 -- Combine with keyword results and boost keyword matches
