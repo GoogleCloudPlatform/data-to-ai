@@ -45,19 +45,19 @@ variable "notification_email" {
 variable "default_multimodal_vertex_ai_model" {
   description = "Name of the default multimodal model"
   type = string
-  default = "gemini-1.5-flash-002"
+  default = "gemini-2.0-flash-lite-001"
 }
 
 variable "pro_multimodal_vertex_ai_model" {
-  description = "Name of the default multimodal model"
+  description = "Name of the advanced multimodal model"
   type = string
-  default = "gemini-1.5-pro-002"
+  default = "gemini-2.0-flash-001"
 }
 
 variable "text_embeddings_vertex_ai_model" {
   description = "Name of the text embedding model"
   type = string
-  default = "text-embedding-004"
+  default = "text-embedding-005"
 }
 
 variable "multimodal_embeddings_vertex_ai_model" {
