@@ -1,4 +1,4 @@
-# BigQuery multimodal and semantic search capabilities
+# Multimodal processing using LLMs, semantic search and advanced time-series forecasting using BigQuery
 
 [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=GITHUB_URL)
 
