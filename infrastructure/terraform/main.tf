@@ -24,7 +24,7 @@ terraform {
   }
 
   provider_meta "google" {
-    module_name = "cloud-solutions/data-platform-multimodal-v1.0"
+    module_name = "cloud-solutions/data-to-ai-deploy-v1"
   }
 }
 
