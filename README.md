@@ -12,6 +12,7 @@ using multimodal GenAI capabilities of Google Cloud.
 * Ability to extract complex image attributes without the need to train custom models
 * Full text search on the automatically generated description of the images
 * Vector search for images with similar attributes
+* See the [ObjectRef branch](https://github.com/GoogleCloudPlatform/data-to-ai/tree/objectref) for how to utilize the BigQuery ObjectRef feature.
 
 ## Use Cases
 
