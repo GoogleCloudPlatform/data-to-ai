@@ -61,3 +61,5 @@ crash.*.log
 /infrastructure/terraform/functions/image-process-invoker/index.js
 /.cloud-env.sh
 /infrastructure/project-setup/.terraform.lock.hcl
+/agents/maintenance_scheduler/poetry.lock
+/agents/maintenance_scheduler/deployment/*.whl
