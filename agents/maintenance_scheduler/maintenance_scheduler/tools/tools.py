@@ -16,13 +16,15 @@
 
 import logging
 import random
-from datetime import datetime, timedelta, UTC
+from zoneinfo import ZoneInfo
+from datetime import datetime, timedelta
 from typing import List
 
 from maintenance_scheduler.entities.bus_stop import BusStop, BusStopIncident
 
 logger = logging.getLogger(__name__)
 
+time_zone = ZoneInfo("america/new_york")
 
 def get_unresolved_incidents() -> List[BusStopIncident]:
   """
@@ -81,18 +83,20 @@ def get_expected_number_of_passengers(bus_stop_ids: list) -> dict:
   logger.info("Retrieving expected number of passengers for %s", bus_stop_ids)
 
   result = {}
-  for bus_stop_id in  bus_stop_ids:
+  for bus_stop_id in bus_stop_ids:
     forecast = []
     base_number_of_passengers = random.randint(5, 20);
     for next_increment in range(10, 3 * 24 * 60, 15):
       forecast.append({'time': (
-          datetime.now(UTC) + timedelta(minutes=next_increment)
-      ).isoformat(), 'number_of_passengers': (base_number_of_passengers + random.randint(3,10))})
+          datetime.now(tz=time_zone) + timedelta(minutes=next_increment)
+      ).isoformat(), 'number_of_passengers': (
+            base_number_of_passengers + random.randint(3, 10))})
     result[bus_stop_id] = forecast
   return result
 
 
-def schedule_maintenance(bus_stop_id: str, maintenance_start: str, reason: str) -> str:
+def schedule_maintenance(bus_stop_id: str, maintenance_start: str,
+    reason: str, notification_subject: str, notification_content: str) -> str:
   """
     Schedule a bus stop maintenance
 
@@ -100,16 +104,37 @@ def schedule_maintenance(bus_stop_id: str, maintenance_start: str, reason: str) 
         bus_stop_id: The id if the bus stop
         maintenance_start: the date and time of the maintenance work
         reason: Explanation why this bus stop and time was selected
+        notification_subject: Subject of the email to send to crew supervisor
+        notification_content: Text of the email to send to crew supervisor
 
 
     Returns:
       outcome of the scheduling. Can be "success", "failure", or "review"
 
     Example:
-        >>> schedule_maintenance('stop-1', "April 25, 2025 at 3:00 PM EST", "Broken glass is a safety concern and needs to be cleaned right away.")
+        >>> schedule_maintenance('stop-1', "April 25, 2025 at 3:00 PM EST", "Broken glass is a safety concern and needs to be cleaned right away.", "Bus stop stop-1 maintenance required", "Notification content")
 
     """
 
-  logger.info(f"Scheduling maintenance for {bus_stop_id} at {maintenance_start} because: {reason}")
+  logger.info(
+    f"Scheduling maintenance for {bus_stop_id} at {maintenance_start} "
+    f"because: {reason}, subject: {notification_subject}, content: {notification_content}")
 
   return "success"
+
+
+def get_current_time() -> str:
+  """
+    Returns current time
+
+    Returns:
+      outcome of the scheduling. Can be "success", "failure", or "review"
+
+    Example:
+        >>> get_current_time()
+        'Mon 28 Apr 2025, 12:41PM'
+    """
+
+  logger.info("Getting current time")
+
+  return datetime.now(tz=time_zone).strftime('%a %d %b %Y, %I:%M%p');

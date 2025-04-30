@@ -27,8 +27,8 @@ class AgentModel(BaseModel):
     """Agent model settings."""
 
     name: str = Field(default="maintenance_scheduler_agent")
-    model: str = Field(default="gemini-2.5-flash-preview-04-17")
-    # model: str = Field(default="gemini-2.0-flash-001")
+    # model: str = Field(default="gemini-2.5-flash-preview-04-17")
+    model: str = Field(default="gemini-2.0-flash-001")
 
 
 class Config(BaseSettings):
@@ -43,6 +43,7 @@ class Config(BaseSettings):
     )
     agent_settings: AgentModel = Field(default=AgentModel())
     app_name: str = "Maintenance Scheduler Agent"
+    autonomous: bool = Field(default=False)
     CLOUD_PROJECT: str = Field(default="my_project")
     CLOUD_LOCATION: str = Field(default="us-central1")
     AGENT_RESOURCE_ID: str = Field(default="UNKNOWN")
