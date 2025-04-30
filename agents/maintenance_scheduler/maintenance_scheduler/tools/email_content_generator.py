@@ -13,24 +13,24 @@
 # limitations under the License.
 # add docstring to this module
 
-"""Tools module for the customer service agent."""
+"""Email content module"""
 
 import logging
+
 from google.adk.agents import Agent
 from google.adk.tools import agent_tool
+
 from maintenance_scheduler.config import Config
-
-
-from maintenance_scheduler.entities.notification import MaintenanceNotification, Email
+from maintenance_scheduler.entities.notification import Email
 
 configs = Config()
 
 logger = logging.getLogger(__name__)
 
 email_notification_generator = Agent(
-    name="email_notification_generator",
+    name=configs.email_generator_agent_settings.name,
     description="Agent to generate well formatted email",
-    model=configs.agent_settings.model,
+    model=configs.email_generator_agent_settings.model,
     instruction=
     "Generate an email explaining the work that needs to be done to fix the bus stop. "
     "Include the bus stop id, bus stop image, reason for maintenance and the time when the maintenance needs to occur.",
@@ -39,4 +39,5 @@ email_notification_generator = Agent(
     output_key="email"
 )
 
-email_content_generator_tool = agent_tool.AgentTool(agent=email_notification_generator)
+email_content_generator_tool = \
+    agent_tool.AgentTool(agent=email_notification_generator)

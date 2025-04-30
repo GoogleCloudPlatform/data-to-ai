@@ -22,18 +22,18 @@ from google.genai import types
 
 from .config import Config
 from .prompts import GLOBAL_INSTRUCTION, INSTRUCTION, AUTONOMOUS_INSTRUCTIONS, \
-  INTERACTIVE_INSTRUCTIONS
+    INTERACTIVE_INSTRUCTIONS
 from .shared_libraries.callbacks import (
-  rate_limit_callback,
-  before_agent,
-  before_tool,
+    rate_limit_callback,
+    before_agent,
+    before_tool,
 )
 from .tools.email_content_generator import email_content_generator_tool
 from .tools.tools import (
-  get_unresolved_incidents,
-  get_expected_number_of_passengers,
-  schedule_maintenance,
-  get_current_time
+    get_unresolved_incidents,
+    get_expected_number_of_passengers,
+    schedule_maintenance,
+    get_current_time
 )
 
 warnings.filterwarnings("ignore", category=UserWarning, module=".*pydantic.*")
@@ -44,10 +44,10 @@ configs = Config()
 logger = logging.getLogger(__name__)
 
 safety_settings = [
-  types.SafetySetting(
-      category=types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-      threshold=types.HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
-  ),
+    types.SafetySetting(
+        category=types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+        threshold=types.HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+    ),
 ]
 
 generate_content_config = types.GenerateContentConfig(
@@ -59,19 +59,19 @@ generate_content_config = types.GenerateContentConfig(
 )
 
 root_agent = Agent(
-    name=configs.agent_settings.name,
-    model=configs.agent_settings.model,
+    name=configs.root_agent_settings.name,
+    model=configs.root_agent_settings.model,
     global_instruction=
-        GLOBAL_INSTRUCTION
-        + AUTONOMOUS_INSTRUCTIONS if configs.autonomous
-        else INTERACTIVE_INSTRUCTIONS,
+    GLOBAL_INSTRUCTION
+    + AUTONOMOUS_INSTRUCTIONS if configs.autonomous
+    else INTERACTIVE_INSTRUCTIONS,
     instruction=INSTRUCTION,
     tools=[
-      get_unresolved_incidents,
-      get_expected_number_of_passengers,
-      schedule_maintenance,
-      get_current_time,
-      email_content_generator_tool
+        get_unresolved_incidents,
+        get_expected_number_of_passengers,
+        schedule_maintenance,
+        get_current_time,
+        email_content_generator_tool
     ],
     before_tool_callback=before_tool,
     before_agent_callback=before_agent,

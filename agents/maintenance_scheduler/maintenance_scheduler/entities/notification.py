@@ -11,31 +11,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Customer entity module."""
+
+"""Notification entity module."""
 
 from pydantic import BaseModel, Field, ConfigDict
 
 
 class MaintenanceNotification(BaseModel):
-  """
-  Bus stop maintenance notification
-  """
+    """
+    Bus stop maintenance notification
+    """
 
-  bus_stop_id: str = Field(description="Bus stop id")
-  schedule_time: str = Field(description="Scheduled time of the maintenance")
-  reason: str = Field(description="Reason why maintenance is scheduled")
-  street: str = Field(description="Bus stop address")
-  city: str = Field(description="Bus stop city")
-  state: str = Field(description="Bus stop state")
-  zip: str = Field(description="Bus stop zip")
-  model_config = ConfigDict(from_attributes=True)
+    bus_stop_id: str = Field(description="Bus stop id")
+    schedule_time: str = Field(description="Scheduled time of the maintenance")
+    reason: str = Field(description="Reason why maintenance is scheduled")
+    street: str = Field(description="Bus stop address")
+    city: str = Field(description="Bus stop city")
+    state: str = Field(description="Bus stop state")
+    zip: str = Field(description="Bus stop zip")
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Email(BaseModel):
-  """
-  Email components
-  """
+    """
+    Email components
+    """
 
-  email_subject: str = Field(description="Email subject")
-  email_body: str = Field(description="Body of the email")
-  model_config = ConfigDict(from_attributes=True)
+    email_subject: str = Field(description="Email subject")
+    email_body: str = Field(description="Body of the email")
+    model_config = ConfigDict(from_attributes=True)

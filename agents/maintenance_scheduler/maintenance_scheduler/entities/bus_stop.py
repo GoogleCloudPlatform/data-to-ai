@@ -11,31 +11,37 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Customer entity module."""
 
-from typing import List, Dict, Optional
-from pydantic import BaseModel, Field, ConfigDict
+"""Bus stop entity module."""
+
+from pydantic import BaseModel, Field
+
+
+class USAddress(BaseModel):
+    """
+      Represents an address in USA
+    """
+
+    street: str = Field(description="Street or road, including the number")
+    city: str = Field(description="City")
+    state: str = Field(description="State abbreviation")
+    zip: str = Field(description="ZIP code")
+
 
 class BusStop(BaseModel):
     """
-    Represents a bus stop.
+      Represents a bus stop.
     """
 
-    id: str
-    street: str
-    city: str
-    state: str
-    zip: str
-    model_config = ConfigDict(from_attributes=True)
+    id: str = Field(description="Id of the bus stop")
+    address: USAddress = Field(description="Closest address")
 
 
 class BusStopIncident(BaseModel):
     """
-    Represents an incident with a bus stop.
+      Represents an incident with a bus stop.
     """
 
     bus_stop: BusStop
-    source_image_url: str
-    # TODO: make an enum
-    status: str
-    model_config = ConfigDict(from_attributes=True)
+    source_image_url: str = Field(description="Image of the URL")
+    status: str = Field(description="Status of the incident")

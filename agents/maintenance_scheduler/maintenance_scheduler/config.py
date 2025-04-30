@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Configuration module for the maintenance scheduling agent."""
 
-import os
 import logging
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import BaseModel, Field
+import os
 
+from pydantic import BaseModel, Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -26,9 +27,10 @@ logger = logging.getLogger(__name__)
 class AgentModel(BaseModel):
     """Agent model settings."""
 
-    name: str = Field(default="maintenance_scheduler_agent")
+    name: str = Field(description="Agent description")
     # model: str = Field(default="gemini-2.5-flash-preview-04-17")
-    model: str = Field(default="gemini-2.0-flash-001")
+    model: str = Field(default="gemini-2.0-flash-001",
+                       description="Model used by the agent")
 
 
 class Config(BaseSettings):
@@ -41,10 +43,14 @@ class Config(BaseSettings):
         env_prefix="GOOGLE_",
         case_sensitive=True,
     )
-    agent_settings: AgentModel = Field(default=AgentModel())
+    root_agent_settings: AgentModel = Field(
+        default=AgentModel(name="maintenance_scheduler"))
+    email_generator_agent_settings: AgentModel = Field(
+        default=AgentModel(name="email_generator"))
     app_name: str = "Maintenance Scheduler Agent"
-    autonomous: bool = Field(default=False)
-    CLOUD_PROJECT: str = Field(default="my_project")
+    autonomous: bool = Field(default=False,
+                             description="Indicates if agent needs to work autonomously (without prompting the user)")
+    CLOUD_PROJECT: str = Field()
     CLOUD_LOCATION: str = Field(default="us-central1")
     AGENT_RESOURCE_ID: str = Field(default="UNKNOWN")
     GENAI_USE_VERTEXAI: str = Field(default="1")
