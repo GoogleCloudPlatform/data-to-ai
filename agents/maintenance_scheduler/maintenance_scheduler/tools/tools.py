@@ -25,6 +25,11 @@ from maintenance_scheduler.config import Config
 from maintenance_scheduler.entities.bus_stop import BusStop, BusStopIncident, \
     USAddress
 
+from google.cloud import bigquery
+from google.api_core.client_info import ClientInfo
+
+bigquery_client = bigquery.Client(client_info=ClientInfo(user_agent="cloud-solutions/data-to-ai-agents-scheduler-usage-v1"))
+
 config = Config()
 
 logger = logging.getLogger(__name__)
@@ -33,6 +38,7 @@ time_zone = ZoneInfo("america/new_york")
 
 
 def get_unresolved_incidents() -> List[BusStopIncident]:
+    # TODO: fix the example
     """
       Get a list of unresolved bus stop incidents.
 
@@ -41,31 +47,58 @@ def get_unresolved_incidents() -> List[BusStopIncident]:
 
       Example:
           >>> get_unresolved_incidents()
-          [BusStopIncident(bus_stop=BusStop(id="123", street='123 Main', city='Anytown', state='CA', zip='94100'), source_image_url='https://storage.mtls.cloud.google.com/event-processing-demo-multimodal/sources/MA-02-broken-glass.jpg', status='open')]
+          [BusStopIncident(bus_stop=BusStop(id="123", street='123 Main', city='Anytown', state='CA', zip='94100'), source_image_uri='https://storage.mtls.cloud.google.com/event-processing-demo-multimodal/sources/MA-02-broken-glass.jpg', status='open')]
       """
 
     logger.info("Getting the list of incidents")
+    if config.mock_tools:
+        return [
+            BusStopIncident(
+                status="open",
+                bus_stop=BusStop(
+                    id='stop-1',
+                    address=USAddress(street="123 Main", city="New York",
+                                      state="NY", zip="10001")),
+                source_image_uri='https://storage.mtls.cloud.google.com/event-processing-demo-multimodal/sources/MA-02-broken-glass.jpg',
+                source_image_mime_type="image/jpeg"),
+            BusStopIncident(
+                status="open",
+                bus_stop=BusStop(
+                    id='stop-2',
+                    address=USAddress(
+                        street="457 1st Street", city="New York", state="NY",
+                        zip="10002")),
+                source_image_uri='https://storage.mtls.cloud.google.com/event-processing-demo-multimodal/sources/MC-02-dirty-damaged.jpg',
+                source_image_mime_type="image/jpeg")
+        ]
+    rows = bigquery_client.query_and_wait(
+        query="""
+        SELECT incidents.incident_id, incidents.bus_stop_id, incidents.status,
+            reports.uri as source_image_uri, 'image/jpeg' as source_image_mime_type,
+            reports.description
+        FROM `event-processing-demo.bus_stop_image_processing.incidents` incidents
+        JOIN `event-processing-demo.bus_stop_image_processing.image_reports` reports
+            ON incidents.open_report_id = reports.report_id
+        WHERE incidents.status = 'OPEN' 
+    """
+    )
 
-    result = [
-        BusStopIncident(
-            status="open",
+    result = []
+    for row in rows:
+        result.append(BusStopIncident(
+            status=row.status.lower(),
+            source_image_uri=row.source_image_uri,
+            source_image_mime_type=row.source_image_mime_type,
+            description=row.description,
             bus_stop=BusStop(
-                id='stop-1',
-                address=USAddress(street="123 Main", city="New York",
-                                  state="NY", zip="10001")),
-            source_image_url='https://storage.mtls.cloud.google.com/event-processing-demo-multimodal/sources/MA-02-broken-glass.jpg'),
-        BusStopIncident(
-            status="open",
-            bus_stop=BusStop(
-                id='stop-2',
+                id=row.bus_stop_id,
                 address=USAddress(
                     street="457 1st Street", city="New York", state="NY",
-                    zip="10002")),
-            source_image_url='https://storage.mtls.cloud.google.com/event-processing-demo-multimodal/sources/MC-02-dirty-damaged.jpg')
-    ]
+                    zip="10002")
+            )
+        ))
 
     return result
-
 
 def get_expected_number_of_passengers(bus_stop_ids: list) -> dict:
     """Provides expected number of passengers for a particular bus stop at some point in the future.
@@ -126,13 +159,22 @@ def schedule_maintenance(
         outcome of the scheduling. Can be "success", "failure", or "review"
 
       Example:
-          >>> schedule_maintenance('stop-1', "April 1, 2025, at 3:00 PM EST", "Broken glass is a safety concern and needs to be cleaned right away.", "Bus stop stop-1 maintenance required", "Notification content")
+          >>> schedule_maintenance('stop-1', "April 2, 2025, at 3:00 PM EST", "Broken glass is a safety concern and needs to be cleaned right away.", "Bus stop stop-1 maintenance required", "Notification content")
 
       """
 
     logger.info(
         f"Scheduling maintenance for {bus_stop_id} at {maintenance_start} "
         f"because: {reason}, subject: {notification_subject}, content: {notification_content}")
+
+    if not config.mock_tools:
+        bigquery_client.query_and_wait(
+            query=f"""
+        UPDATE `event-processing-demo.bus_stop_image_processing.incidents`
+        SET status = 'scheduled'
+        WHERE status = 'open' and bus_stop_id = '{bus_stop_id}'
+    """
+        )
 
     return "success"
 

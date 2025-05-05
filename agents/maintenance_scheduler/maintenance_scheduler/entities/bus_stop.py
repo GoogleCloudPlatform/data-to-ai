@@ -42,6 +42,8 @@ class BusStopIncident(BaseModel):
       Represents an incident with a bus stop.
     """
 
-    bus_stop: BusStop
-    source_image_url: str = Field(description="Image of the URL")
+    bus_stop: BusStop = Field(description="Bus stop")
+    source_image_uri: str = Field(description="Image URI")
+    source_image_mime_type: str = Field(description="Image mime")
     status: str = Field(description="Status of the incident")
+    description: str = Field(description="Description of the bus stop")

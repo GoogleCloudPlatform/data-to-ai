@@ -27,7 +27,8 @@ logger = logging.getLogger(__name__)
 class AgentModel(BaseModel):
     """Agent model settings."""
 
-    name: str = Field(description="Agent description")
+    name: str = Field(description="Agent name. Must be a valid identifier")
+    description: str = Field(description="Agent description")
     # model: str = Field(default="gemini-2.5-flash-preview-04-17")
     model: str = Field(default="gemini-2.0-flash-001",
                        description="Model used by the agent")
@@ -44,14 +45,15 @@ class Config(BaseSettings):
         case_sensitive=True,
     )
     root_agent_settings: AgentModel = Field(
-        default=AgentModel(name="maintenance_scheduler"))
+        default=AgentModel(name="maintenance_scheduler", description="Bus maintenance scheduler"))
     email_generator_agent_settings: AgentModel = Field(
-        default=AgentModel(name="email_generator"))
+        default=AgentModel(name="email_generator", description="Email content generator"))
     app_name: str = "Maintenance Scheduler Agent"
-    autonomous: bool = Field(default=False,
+    autonomous: bool = Field(default=True,
                              description="Indicates if agent needs to work autonomously (without prompting the user)")
     CLOUD_PROJECT: str = Field()
     CLOUD_LOCATION: str = Field(default="us-central1")
     AGENT_RESOURCE_ID: str = Field(default="UNKNOWN")
     GENAI_USE_VERTEXAI: str = Field(default="1")
     API_KEY: str | None = Field(default="")
+    mock_tools: bool = Field(default=False, description="Indicates if tools need to produce mock output")

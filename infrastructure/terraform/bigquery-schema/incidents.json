@@ -16,6 +16,33 @@
     "type": "STRING"
   },
   {
+    "mode": "NULLABLE",
+    "name": "maintenance_details",
+    "type": "RECORD",
+    "fields": [
+      {
+        "mode": "REQUIRED",
+        "name": "scheduled_time",
+        "type": "STRING"
+      },
+      {
+        "mode": "REQUIRED",
+        "name": "reason",
+        "type": "STRING"
+      },
+      {
+        "mode": "REQUIRED",
+        "name": "notification_subject",
+        "type": "STRING"
+      },
+      {
+        "mode": "REQUIRED",
+        "name": "notification_body",
+        "type": "STRING"
+      }
+    ]
+  },
+  {
     "mode": "REQUIRED",
     "name": "open_report_id",
     "type": "STRING"

@@ -21,6 +21,7 @@ prompt: |
   A bus stop is comprised of any combination of the following physical assets: a bench, a sign, a shelter, and/or a trash can.
   Return your answer in valid JSON format (without JSON decorators) with these fields:
   * "cleanliness_level" (Integer): Rate the general cleanliness of this bus stop. Possible values: 1="dirty and warrants cleaning", 2="clean or mildly clean". The following are examples of cleanliness issues: littering, broken glass, spillage of liquids or oil, ground covered in dead leaves, excessive dirt on benches that would prevent or detract from sitting, unsightly graffiti on the bus stop or surrounding area, disfigured amenities, and anything that would be very unsightly or unreasonably dirty.
+  * "safety_level" (Integer): Rate the safety of the bus stop on a scale of 1 to 3 inclusive, where 3 indicates no safety concerns, and 1 indicates unsafe conditions.
   * "description" (String): Provide a detailed textual description of what is in the picture, focusing on cleanliness and safety. This description should explain the cleanliness_level and safety_level scores you provided. This description has a maximum of 200 words. Include any sign of potential vandalism. Do not make things up. Do not make assumptions about the area or the neighborhood where the bus stop is located.
   * "number_of_people" (Integer): Identify number of people in or around the bus stop.
   * "is_bus_stop" (Boolean): Specify whether the picture looks like a bus stop or not.

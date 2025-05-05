@@ -30,6 +30,7 @@ INTERACTIVE_INSTRUCTIONS = """
 AUTONOMOUS_INSTRUCTIONS = """
 *   Assume that you need to schedule work autonomously. 
 *   Select the best possible solution and execute without confirmation.
+*   Schedule at least all bus accidents that affect the safety of passengers
 """
 
 INSTRUCTION = """
@@ -37,8 +38,8 @@ Analyze the list of currently open bus stop incidents and find out the best time
 to send the maintenance crew to address the safety of cleanliness of a bus stop.
 
 INSTRUCTIONS:
+  * Prioritize maintenance first by the safety concerns, then by the average number of bus stop passengers
   * If there are safety concerns then schedule maintenance right away and disregard any other considerations
-  * Prioritize maintenance by the busiest bus stop
   * Whenever possible, use the regular working hours in the city of New York, NY, USA to schedule the work
   * Attempt to find the time which affects as fewer passengers as possible
   * Assume that it takes on average two hours to fix broken glass and three hours to clear the graffiti

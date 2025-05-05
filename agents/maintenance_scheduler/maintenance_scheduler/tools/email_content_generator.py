@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 email_notification_generator = Agent(
     name=configs.email_generator_agent_settings.name,
-    description="Agent to generate well formatted email",
+    description=configs.email_generator_agent_settings.description,
     model=configs.email_generator_agent_settings.model,
     instruction=
     "Generate an email explaining the work that needs to be done to fix the bus stop. "

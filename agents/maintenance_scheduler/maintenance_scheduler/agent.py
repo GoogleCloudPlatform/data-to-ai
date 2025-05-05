@@ -26,7 +26,7 @@ from .prompts import GLOBAL_INSTRUCTION, INSTRUCTION, AUTONOMOUS_INSTRUCTIONS, \
 from .shared_libraries.callbacks import (
     rate_limit_callback,
     before_agent,
-    before_tool,
+    before_tool, after_tool,
 )
 from .tools.email_content_generator import email_content_generator_tool
 from .tools.tools import (
@@ -61,6 +61,7 @@ generate_content_config = types.GenerateContentConfig(
 root_agent = Agent(
     name=configs.root_agent_settings.name,
     model=configs.root_agent_settings.model,
+    description=configs.root_agent_settings.description,
     global_instruction=
     GLOBAL_INSTRUCTION
     + AUTONOMOUS_INSTRUCTIONS if configs.autonomous
@@ -74,6 +75,7 @@ root_agent = Agent(
         email_content_generator_tool
     ],
     before_tool_callback=before_tool,
+    after_tool_callback=after_tool,
     before_agent_callback=before_agent,
     before_model_callback=rate_limit_callback,
 )
