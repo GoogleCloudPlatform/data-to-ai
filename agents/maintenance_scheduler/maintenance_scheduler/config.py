@@ -45,15 +45,28 @@ class Config(BaseSettings):
         case_sensitive=True,
     )
     root_agent_settings: AgentModel = Field(
-        default=AgentModel(name="maintenance_scheduler", description="Bus maintenance scheduler"))
+        default=AgentModel(name="maintenance_scheduler",
+                           description="Bus maintenance scheduler"))
     email_generator_agent_settings: AgentModel = Field(
-        default=AgentModel(name="email_generator", description="Email content generator"))
+        default=AgentModel(name="email_generator",
+                           description="Email content generator"))
     app_name: str = "Maintenance Scheduler Agent"
     autonomous: bool = Field(default=False,
                              description="Indicates if agent needs to work autonomously (without prompting the user)")
     CLOUD_PROJECT: str = Field()
+    CLOUD_BIGQUERY_DATA_PROJECT: str = Field(default="")
+    CLOUD_BIGQUERY_RUN_PROJECT: str = Field(default="")
     CLOUD_LOCATION: str = Field(default="us-central1")
     AGENT_RESOURCE_ID: str = Field(default="UNKNOWN")
     GENAI_USE_VERTEXAI: str = Field(default="1")
     API_KEY: str | None = Field(default="")
-    mock_tools: bool = Field(default=False, description="Indicates if tools need to produce mock output")
+    mock_tools: bool = Field(default=False,
+                             description="Indicates if tools need to produce mock output")
+
+    def get_bigquery_data_project(self) -> str:
+        return self.CLOUD_BIGQUERY_DATA_PROJECT \
+            if self.CLOUD_BIGQUERY_DATA_PROJECT else self.CLOUD_PROJECT
+
+    def get_bigquery_run_project(self) -> str:
+        return self.CLOUD_BIGQUERY_RUN_PROJECT \
+            if self.CLOUD_BIGQUERY_RUN_PROJECT else self.CLOUD_PROJECT

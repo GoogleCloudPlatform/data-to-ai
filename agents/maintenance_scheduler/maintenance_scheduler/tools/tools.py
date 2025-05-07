@@ -59,7 +59,7 @@ def get_unresolved_incidents() -> List[BusStopIncident]:
                     id='stop-1',
                     address=USAddress(street="123 Main", city="New York",
                                       state="NY", zip="10001")),
-                source_image_uri='https://storage.mtls.cloud.google.com/event-processing-demo-multimodal/sources/MA-02-broken-glass.jpg',
+                source_image_uri=f"https://storage.mtls.cloud.google.com/{config.CLOUD_PROJECT}-multimodal/sources/MA-02-broken-glass.jpg",
                 source_image_mime_type="image/jpeg"),
             BusStopIncident(
                 status="open",
@@ -68,16 +68,17 @@ def get_unresolved_incidents() -> List[BusStopIncident]:
                     address=USAddress(
                         street="457 1st Street", city="New York", state="NY",
                         zip="10002")),
-                source_image_uri='https://storage.mtls.cloud.google.com/event-processing-demo-multimodal/sources/MC-02-dirty-damaged.jpg',
+                source_image_uri="https://storage.mtls.cloud.google.com/{config.CLOUD_PROJECT}-multimodal/sources/MC-02-dirty-damaged.jpg",
                 source_image_mime_type="image/jpeg")
         ]
     rows = bigquery_client.query_and_wait(
-        query="""
+        project=config.get_bigquery_run_project(),
+        query=f"""
         SELECT incidents.incident_id, incidents.bus_stop_id, incidents.status,
             reports.uri as source_image_uri, reports.content_type as source_image_mime_type,
             reports.description
-        FROM `event-processing-demo.bus_stop_image_processing.incidents` incidents
-        JOIN `event-processing-demo.bus_stop_image_processing.image_reports` reports
+        FROM `{config.get_bigquery_data_project()}.bus_stop_image_processing.incidents` incidents
+        JOIN `{config.get_bigquery_data_project()}.bus_stop_image_processing.image_reports` reports
             ON incidents.open_report_id = reports.report_id
         WHERE incidents.status = 'OPEN' 
     """
@@ -169,7 +170,7 @@ def schedule_maintenance(
 
     if not config.mock_tools:
         job_config = bigquery.QueryJobConfig(
-            query_parameters = [
+            query_parameters=[
                 bigquery.ScalarQueryParameter('bus_stop_id', "STRING", bus_stop_id),
                 bigquery.ScalarQueryParameter('maintenance_start', "STRING", maintenance_start),
                 bigquery.ScalarQueryParameter('reason', "STRING", reason),
@@ -178,8 +179,9 @@ def schedule_maintenance(
             ]
         )
         bigquery_client.query_and_wait(
-            query="""
-        UPDATE `event-processing-demo.bus_stop_image_processing.incidents`
+            project=config.get_bigquery_run_project(),
+            query=f"""
+        UPDATE `{config.get_bigquery_data_project()}.bus_stop_image_processing.incidents`
         SET status = 'SCHEDULED', 
             maintenance_details = STRUCT(
             @maintenance_start as scheduled_time, 
