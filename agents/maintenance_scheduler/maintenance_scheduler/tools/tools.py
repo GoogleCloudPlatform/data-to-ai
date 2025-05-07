@@ -74,7 +74,7 @@ def get_unresolved_incidents() -> List[BusStopIncident]:
     rows = bigquery_client.query_and_wait(
         query="""
         SELECT incidents.incident_id, incidents.bus_stop_id, incidents.status,
-            reports.uri as source_image_uri, 'image/jpeg' as source_image_mime_type,
+            reports.uri as source_image_uri, reports.content_type as source_image_mime_type,
             reports.description
         FROM `event-processing-demo.bus_stop_image_processing.incidents` incidents
         JOIN `event-processing-demo.bus_stop_image_processing.image_reports` reports
@@ -168,12 +168,27 @@ def schedule_maintenance(
         f"because: {reason}, subject: {notification_subject}, content: {notification_content}")
 
     if not config.mock_tools:
+        job_config = bigquery.QueryJobConfig(
+            query_parameters = [
+                bigquery.ScalarQueryParameter('bus_stop_id', "STRING", bus_stop_id),
+                bigquery.ScalarQueryParameter('maintenance_start', "STRING", maintenance_start),
+                bigquery.ScalarQueryParameter('reason', "STRING", reason),
+                bigquery.ScalarQueryParameter('notification_subject', "STRING", notification_subject),
+                bigquery.ScalarQueryParameter('notification_content', "STRING", notification_content),
+            ]
+        )
         bigquery_client.query_and_wait(
-            query=f"""
+            # TODO: escape single quote in data, or use query parameters.
+            query="""
         UPDATE `event-processing-demo.bus_stop_image_processing.incidents`
-        SET status = 'scheduled'
-        WHERE status = 'open' and bus_stop_id = '{bus_stop_id}'
-    """
+        SET status = 'SCHEDULED', 
+            maintenance_details = STRUCT(
+            @maintenance_start as scheduled_time, 
+            @reason as reason, 
+            @notification_subject as notification_subject, 
+            @notification_content as notification_body)
+        WHERE status = 'OPEN' and bus_stop_id = @bus_stop_id
+    """, job_config=job_config
         )
 
     return "success"
@@ -194,3 +209,14 @@ def get_current_time() -> str:
     logger.info("Getting current time")
 
     return datetime.now(tz=time_zone).strftime('%a %d %b %Y, %I:%M%p')
+
+
+def is_time_on_weekend(day: int, month:int, year: int) -> bool:
+    """
+    Return a Boolean indicating if the current time is on the weekend
+    """
+
+    date = datetime.date(year, month, day)
+
+    return date.weekday() > 4
+

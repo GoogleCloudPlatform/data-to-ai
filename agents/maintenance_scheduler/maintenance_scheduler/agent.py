@@ -33,7 +33,8 @@ from .tools.tools import (
     get_unresolved_incidents,
     get_expected_number_of_passengers,
     schedule_maintenance,
-    get_current_time
+    get_current_time,
+    is_time_on_weekend
 )
 
 warnings.filterwarnings("ignore", category=UserWarning, module=".*pydantic.*")
@@ -72,7 +73,8 @@ root_agent = Agent(
         get_expected_number_of_passengers,
         schedule_maintenance,
         get_current_time,
-        email_content_generator_tool
+        email_content_generator_tool,
+        is_time_on_weekend
     ],
     before_tool_callback=before_tool,
     after_tool_callback=after_tool,

@@ -49,7 +49,7 @@ class Config(BaseSettings):
     email_generator_agent_settings: AgentModel = Field(
         default=AgentModel(name="email_generator", description="Email content generator"))
     app_name: str = "Maintenance Scheduler Agent"
-    autonomous: bool = Field(default=True,
+    autonomous: bool = Field(default=False,
                              description="Indicates if agent needs to work autonomously (without prompting the user)")
     CLOUD_PROJECT: str = Field()
     CLOUD_LOCATION: str = Field(default="us-central1")

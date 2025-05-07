@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 RATE_LIMIT_SECS = 60
-RPM_QUOTA = 10
+RPM_QUOTA = 100
 
 
 def rate_limit_callback(
@@ -126,7 +126,7 @@ def after_tool(
     tool_response: Dict
 ) -> Optional[Dict]:
     logger.info("After tool: " + tool.name)
-    if tool.name == "get_unresolved_incidents":
+    if tool.name == "get_unresolved_incidents" and False:
         logger.info(f"Tool response: {tool_response}")
         incident: BusStopIncident
         for incident in tool_response:
