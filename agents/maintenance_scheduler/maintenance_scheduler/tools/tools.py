@@ -178,7 +178,6 @@ def schedule_maintenance(
             ]
         )
         bigquery_client.query_and_wait(
-            # TODO: escape single quote in data, or use query parameters.
             query="""
         UPDATE `event-processing-demo.bus_stop_image_processing.incidents`
         SET status = 'SCHEDULED', 
