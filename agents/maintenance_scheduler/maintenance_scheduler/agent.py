@@ -65,8 +65,8 @@ root_agent = Agent(
     description=configs.root_agent_settings.description,
     global_instruction=
     GLOBAL_INSTRUCTION
-    + AUTONOMOUS_INSTRUCTIONS if configs.autonomous
-    else INTERACTIVE_INSTRUCTIONS,
+    + (AUTONOMOUS_INSTRUCTIONS if configs.autonomous
+    else INTERACTIVE_INSTRUCTIONS),
     instruction=INSTRUCTION,
     tools=[
         get_unresolved_incidents,
