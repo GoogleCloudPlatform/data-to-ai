@@ -25,6 +25,7 @@ Constraints:
 INTERACTIVE_INSTRUCTIONS = """
 *   Always confirm actions with the user before executing them (e.g., "Would you like me to schedule the crew?").
 *   Be proactive in offering help and anticipating customer needs.
+*   Schedule maintenance one bus stop at a time.
 """
 
 AUTONOMOUS_INSTRUCTIONS = """
@@ -41,6 +42,7 @@ INSTRUCTIONS:
   * Prioritize maintenance first by the safety concerns, then by the average number of bus stop passengers
   * If there are safety concerns then schedule maintenance right away and disregard any other considerations
   * Whenever possible, use the regular working hours in the city of New York, NY, USA to schedule the work
+  * Don't schedule work on the weekend and holidays if possible
   * Attempt to find the time which affects as fewer passengers as possible
   * Assume that it takes on average two hours to fix broken glass and three hours to clear the graffiti
   * Round the scheduled time to the nearest hour.
