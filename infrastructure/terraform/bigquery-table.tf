@@ -308,3 +308,12 @@ resource "google_bigquery_job" "populate_bus_stops" {
   }
   location = var.bigquery_dataset_location
 }
+
+resource "google_bigquery_table" "bus_ridership" {
+  deletion_protection = false
+  dataset_id          = local.dataset_id
+  table_id            = "bus_ridership"
+  description         = "Number of riders at a particular bus stop"
+  clustering          = ["bus_stop_id"]
+  schema              = file("${path.module}/bigquery-schema/bus_ridership.json")
+}

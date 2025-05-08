@@ -1,0 +1,27 @@
+[
+{
+"name": "bus_stop_id",
+"mode": "REQUIRED",
+"type": "STRING"
+},
+{
+"name": "num_riders",
+"mode": "REQUIRED",
+"type": "INT64"
+},
+{
+"name": "event_ts",
+"mode": "REQUIRED",
+"type": "TIMESTAMP"
+},
+{
+"name": "temperature",
+"mode": "NULLABLE",
+"type": "FLOAT64"
+},
+{
+"name": "total_precipitation_6hr",
+"mode": "NULLABLE",
+"type": "FLOAT64"
+}
+]
