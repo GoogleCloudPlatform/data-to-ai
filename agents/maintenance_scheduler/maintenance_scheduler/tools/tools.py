@@ -125,16 +125,61 @@ def get_expected_number_of_passengers(bus_stop_ids: list) -> dict:
       """
     logger.info("Retrieving expected number of passengers for %s", bus_stop_ids)
 
+    if config.mock_tools:
+        result = {}
+        for bus_stop_id in bus_stop_ids:
+            forecast = []
+            base_number_of_passengers = random.randint(5, 20)
+            for next_increment in range(10, 3 * 24 * 60, 15):
+                forecast.append({'time': (
+                    datetime.now(tz=time_zone) + timedelta(minutes=next_increment)
+                ).isoformat(), 'number_of_passengers': (
+                    base_number_of_passengers + random.randint(3, 10))})
+            result[bus_stop_id] = forecast
+        return result
+
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ArrayQueryParameter('bus_stop_ids', "STRING", bus_stop_ids)
+        ]
+    )
+
+    rows = bigquery_client.query_and_wait(
+        job_config=job_config,
+        project=config.get_bigquery_run_project(),
+        query=f"""
+        WITH forecast AS (
+            SELECT
+              bus_stop_id, forecast_timestamp, 
+              CAST(forecast_value AS INT64) as expected_number_of_passengers
+            FROM
+              AI.FORECAST(
+                (SELECT bus_stop_id, event_ts, num_riders
+                  FROM `{config.get_bigquery_data_project()}.bus_stop_image_processing.bus_ridership`
+                  WHERE bus_stop_id IN UNNEST(@bus_stop_ids)),
+                data_col => 'num_riders',
+                timestamp_col => 'event_ts',
+                model => 'TimesFM 2.0',
+                id_cols => ['bus_stop_id'],
+                horizon => 500,
+                confidence_level => .8)
+        )
+        SELECT bus_stop_id, forecast_timestamp, expected_number_of_passengers 
+            FROM forecast WHERE forecast_timestamp > CURRENT_TIMESTAMP()"""
+    )
+
     result = {}
-    for bus_stop_id in bus_stop_ids:
-        forecast = []
-        base_number_of_passengers = random.randint(5, 20)
-        for next_increment in range(10, 3 * 24 * 60, 15):
-            forecast.append({'time': (
-                datetime.now(tz=time_zone) + timedelta(minutes=next_increment)
-            ).isoformat(), 'number_of_passengers': (
-                base_number_of_passengers + random.randint(3, 10))})
+    for row in rows:
+        bus_stop_id = row.bus_stop_id
+        forecast = result[bus_stop_id] if bus_stop_id in result else []
+        forecast.append(
+            {'time': row.forecast_timestamp
+                .replace(tzinfo=ZoneInfo('UTC')).astimezone(time_zone)
+                .strftime("%m/%d/%Y %H:%M"),
+             'number_of_passengers': row.expected_number_of_passengers
+             })
         result[bus_stop_id] = forecast
+
     return result
 
 

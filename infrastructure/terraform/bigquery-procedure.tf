@@ -177,3 +177,21 @@ resource "google_bigquery_routine" "generate_synthetic_ridership" {
     generate_number_of_riders_function = "${local.fq_dataset_id}.${google_bigquery_routine.generate_number_of_riders.routine_id}"
   })
 }
+
+resource "google_bigquery_routine" "forecast_ridership_using_times_fm_model" {
+  dataset_id   = local.dataset_id
+  routine_id   = "forecast_ridership_using_times_fm_model"
+  routine_type = "TABLE_VALUED_FUNCTION"
+  language     = "SQL"
+
+  depends_on = [time_sleep.wait_for_text_embedding_model_creation]
+
+  definition_body = templatefile("${path.module}/bigquery-routines/forecast-ridership-using-times-fm-model.sql.tftpl", {
+    bus_ridership_table = "${local.fq_dataset_id}.${google_bigquery_table.bus_ridership.table_id}"
+  })
+  arguments {
+    name          = "bus_stop_ids"
+    argument_kind = "FIXED_TYPE"
+    data_type     = jsonencode({ "typeKind" : "ARRAY", "arrayElementType": {"typeKind": "STRING"} })
+  }
+}

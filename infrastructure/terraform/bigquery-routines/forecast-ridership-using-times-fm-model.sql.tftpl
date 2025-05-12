@@ -1,0 +1,14 @@
+SELECT
+  bus_stop_id, forecast_timestamp, forecast_value
+FROM
+  AI.FORECAST(
+    (SELECT bus_stop_id, event_ts, num_riders
+      FROM `${bus_ridership_table}`
+      WHERE bus_stop_id IN UNNEST(bus_stop_ids)),
+    data_col => 'num_riders',
+    timestamp_col => 'event_ts',
+    model => 'TimesFM 2.0',
+    id_cols => ['bus_stop_id'],
+    horizon => 50,
+    confidence_level => .8
+  )
