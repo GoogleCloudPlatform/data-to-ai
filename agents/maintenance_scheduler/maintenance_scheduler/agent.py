@@ -18,7 +18,9 @@ import logging
 import warnings
 
 from google.adk import Agent
+from google.adk.planners import BuiltInPlanner
 from google.genai import types
+from google.genai.types import ThinkingConfig
 
 from .config import Config
 from .prompts import GLOBAL_INSTRUCTION, INSTRUCTION, AUTONOMOUS_INSTRUCTIONS, \
@@ -68,6 +70,8 @@ root_agent = Agent(
     + (AUTONOMOUS_INSTRUCTIONS if configs.autonomous
     else INTERACTIVE_INSTRUCTIONS),
     instruction=INSTRUCTION,
+    planner=BuiltInPlanner(
+        thinking_config=ThinkingConfig(include_thoughts=True)),
     tools=[
         get_unresolved_incidents,
         get_expected_number_of_passengers,

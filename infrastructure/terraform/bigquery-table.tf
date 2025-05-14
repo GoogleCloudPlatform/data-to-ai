@@ -280,27 +280,29 @@ resource "google_bigquery_job" "populate_bus_stops" {
       uris = ['gs://bus-stops-open-access/loader-data/bus_stops000000000000.json']);
 
     INSERT INTO ${local.dataset_id}.${google_bigquery_table.bus_stops.table_id} (
-      bus_stop_id,
-      street_address,
-      school_zone,
-      seating,
-      num_benches,
-      maps,
-      shelter_ads,
-      panel_type,
-      lighting,
-      location)
-      SELECT CAST(bus_stop_id AS STRING) bus_stop_id,
-      street_address,
-      school_zone,
-      seating,
-      IF(num_benches = -1, 0, num_benches) num_benches,
-      maps,
-      shelter_ads,
-      panel_type,
-      lighting,
-      geometry
+        bus_stop_id,
+        address,
+        school_zone,
+        seating,
+        num_benches,
+        maps,
+        shelter_ads,
+        panel_type,
+        lighting,
+        location)
+      SELECT CAST(bus_stop_id AS STRING)
+        bus_stop_id,
+        STRUCT(street_address as street, 'Anytown' as city, 'NY' as state, '10001' as zip) as address,
+        school_zone,
+        seating,
+        IF(num_benches = -1, 0, num_benches) num_benches,
+        maps,
+        shelter_ads,
+        panel_type,
+        lighting,
+        geometry
        FROM ${local.dataset_id}.${google_bigquery_table.bus_stops.table_id}_temp;
+
     DROP TABLE ${local.dataset_id}.${google_bigquery_table.bus_stops.table_id}_temp;
     EOS
     create_disposition = ""

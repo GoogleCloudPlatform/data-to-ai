@@ -21,14 +21,15 @@ from datetime import datetime, timedelta
 from typing import List
 from zoneinfo import ZoneInfo
 
+from google.api_core.client_info import ClientInfo
+from google.cloud import bigquery
+
 from maintenance_scheduler.config import Config
 from maintenance_scheduler.entities.bus_stop import BusStop, BusStopIncident, \
     USAddress
 
-from google.cloud import bigquery
-from google.api_core.client_info import ClientInfo
-
-bigquery_client = bigquery.Client(client_info=ClientInfo(user_agent="cloud-solutions/data-to-ai-agents-scheduler-usage-v1"))
+bigquery_client = bigquery.Client(client_info=ClientInfo(
+    user_agent="cloud-solutions/data-to-ai-agents-scheduler-usage-v1"))
 
 config = Config()
 
@@ -76,10 +77,12 @@ def get_unresolved_incidents() -> List[BusStopIncident]:
         query=f"""
         SELECT incidents.incident_id, incidents.bus_stop_id, incidents.status,
             reports.uri as source_image_uri, reports.content_type as source_image_mime_type,
-            reports.description
+            reports.description, bus_stops.address
         FROM `{config.get_bigquery_data_project()}.bus_stop_image_processing.incidents` incidents
         JOIN `{config.get_bigquery_data_project()}.bus_stop_image_processing.image_reports` reports
             ON incidents.open_report_id = reports.report_id
+        JOIN `{config.get_bigquery_data_project()}.bus_stop_image_processing.bus_stops` bus_stops
+            ON incidents.bus_stop_id = bus_stops.bus_stop_id
         WHERE incidents.status = 'OPEN' 
     """
     )
@@ -94,12 +97,15 @@ def get_unresolved_incidents() -> List[BusStopIncident]:
             bus_stop=BusStop(
                 id=row.bus_stop_id,
                 address=USAddress(
-                    street="457 1st Street", city="New York", state="NY",
-                    zip="10002")
+                    street=row.address['street'],
+                    city=row.address['city'],
+                    state=row.address['state'],
+                    zip=row.address['zip'])
             )
         ))
 
     return result
+
 
 def get_expected_number_of_passengers(bus_stop_ids: list) -> dict:
     """Provides expected number of passengers for a particular bus stop at some point in the future.
@@ -132,7 +138,8 @@ def get_expected_number_of_passengers(bus_stop_ids: list) -> dict:
             base_number_of_passengers = random.randint(5, 20)
             for next_increment in range(10, 3 * 24 * 60, 15):
                 forecast.append({'time': (
-                    datetime.now(tz=time_zone) + timedelta(minutes=next_increment)
+                    datetime.now(tz=time_zone) + timedelta(
+                    minutes=next_increment)
                 ).isoformat(), 'number_of_passengers': (
                     base_number_of_passengers + random.randint(3, 10))})
             result[bus_stop_id] = forecast
@@ -174,8 +181,8 @@ def get_expected_number_of_passengers(bus_stop_ids: list) -> dict:
         forecast = result[bus_stop_id] if bus_stop_id in result else []
         forecast.append(
             {'time': row.forecast_timestamp
-                .replace(tzinfo=ZoneInfo('UTC')).astimezone(time_zone)
-                .strftime("%m/%d/%Y %H:%M"),
+            .replace(tzinfo=ZoneInfo('UTC')).astimezone(time_zone)
+            .strftime("%m/%d/%Y %H:%M"),
              'number_of_passengers': row.expected_number_of_passengers
              })
         result[bus_stop_id] = forecast
@@ -216,11 +223,15 @@ def schedule_maintenance(
     if not config.mock_tools:
         job_config = bigquery.QueryJobConfig(
             query_parameters=[
-                bigquery.ScalarQueryParameter('bus_stop_id', "STRING", bus_stop_id),
-                bigquery.ScalarQueryParameter('maintenance_start', "STRING", maintenance_start),
+                bigquery.ScalarQueryParameter('bus_stop_id', "STRING",
+                                              bus_stop_id),
+                bigquery.ScalarQueryParameter('maintenance_start', "STRING",
+                                              maintenance_start),
                 bigquery.ScalarQueryParameter('reason', "STRING", reason),
-                bigquery.ScalarQueryParameter('notification_subject', "STRING", notification_subject),
-                bigquery.ScalarQueryParameter('notification_content', "STRING", notification_content),
+                bigquery.ScalarQueryParameter('notification_subject', "STRING",
+                                              notification_subject),
+                bigquery.ScalarQueryParameter('notification_content', "STRING",
+                                              notification_content),
             ]
         )
         bigquery_client.query_and_wait(
@@ -257,12 +268,12 @@ def get_current_time() -> str:
     return datetime.now(tz=time_zone).strftime('%a %d %b %Y, %I:%M%p')
 
 
-def is_time_on_weekend(day: int, month:int, year: int) -> bool:
+def is_time_on_weekend(day: int, month: int, year: int) -> bool:
     """
-    Return a Boolean indicating if the current time is on the weekend
+    Returns:
+         a Boolean indicating if the current time is on the weekend
     """
 
-    date = datetime.date(year, month, day)
+    date = datetime(year, month, day)
 
     return date.weekday() > 4
-

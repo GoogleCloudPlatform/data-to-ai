@@ -2,13 +2,34 @@
   {
     "name": "bus_stop_id",
     "mode": "REQUIRED",
-    "type": "STRING",
-    "description": ""
+    "type": "STRING"
   },
   {
-    "name": "street_address",
+    "name": "address",
     "mode": "REQUIRED",
-    "type": "STRING"
+    "type": "RECORD",
+    "fields": [
+      {
+        "name": "street",
+        "mode": "REQUIRED",
+        "type": "STRING"
+      },
+      {
+        "name": "city",
+        "mode": "REQUIRED",
+        "type": "STRING"
+      },
+      {
+        "name": "state",
+        "mode": "REQUIRED",
+        "type": "STRING"
+      },
+      {
+        "name": "zip",
+        "mode": "REQUIRED",
+        "type": "STRING"
+      }
+    ]
   },
   {
     "name": "school_zone",

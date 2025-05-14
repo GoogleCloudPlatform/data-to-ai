@@ -46,7 +46,8 @@ class Config(BaseSettings):
     )
     root_agent_settings: AgentModel = Field(
         default=AgentModel(name="maintenance_scheduler",
-                           description="Bus maintenance scheduler"))
+                           description="Bus maintenance scheduler",
+                           model="gemini-2.5-pro-preview-05-06"))
     email_generator_agent_settings: AgentModel = Field(
         default=AgentModel(name="email_generator",
                            description="Email content generator"))
