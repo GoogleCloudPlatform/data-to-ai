@@ -11,7 +11,7 @@ capabilities prioritizing scheduling of one bus stop over the other.
 
 ### Agent Architecture
 
-![Scheduling Agent Workflow](./agent_workflow.svg)
+![Scheduling Agent Workflow](./agent-workflow.svg)
 
 
 ### Key Features
