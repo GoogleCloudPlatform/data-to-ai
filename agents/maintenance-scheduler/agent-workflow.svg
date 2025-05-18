@@ -1,0 +1,78 @@
+<svg width="515pt" height="314pt" viewBox="0.00 0.00 514.89 314.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 310)">
+<polygon fill="#333537" stroke="none" points="-4,4 -4,-310 510.89,-310 510.89,4 -4,4"></polygon>
+<!-- maintenance-scheduler -->
+<g id="node1" class="node">
+<title>maintenance_scheduler</title>
+<ellipse fill="#0f5223" stroke="#0f5223" cx="113.73" cy="-153" rx="113.73" ry="18"></ellipse>
+<text text-anchor="middle" x="113.73" y="-148.8" font-family="Times,serif" font-size="14.00" fill="#cccccc">🤖 maintenance_scheduler</text>
+</g>
+<!-- get_unresolved_incidents -->
+<g id="node2" class="node">
+<title>get_unresolved_incidents</title>
+<path fill="#0f5223" stroke="#0f5223" d="M461.46,-306C461.46,-306 308.89,-306 308.89,-306 302.89,-306 296.89,-300 296.89,-294 296.89,-294 296.89,-282 296.89,-282 296.89,-276 302.89,-270 308.89,-270 308.89,-270 461.46,-270 461.46,-270 467.46,-270 473.46,-276 473.46,-282 473.46,-282 473.46,-294 473.46,-294 473.46,-300 467.46,-306 461.46,-306"></path>
+<text text-anchor="middle" x="385.17" y="-283.8" font-family="Times,serif" font-size="14.00" fill="#cccccc">🔧 get_unresolved_incidents</text>
+</g>
+<!-- maintenance-scheduler&#45;&gt;get_unresolved_incidents -->
+<g id="edge1" class="edge">
+<title>maintenance_scheduler-&gt;get_unresolved_incidents</title>
+<path fill="none" stroke="#69cb87" d="M133.77,-170.87C160.59,-195.03 211.98,-237.76 263.46,-261 270.51,-264.18 277.97,-267 285.58,-269.5"></path>
+<polygon fill="#69cb87" stroke="#69cb87" points="284.38,-272.8 294.96,-272.38 286.43,-266.1 284.38,-272.8"></polygon>
+</g>
+<!-- get_expected_number_of_passengers -->
+<g id="node3" class="node">
+<title>get_expected_number_of_passengers</title>
+<path fill="none" stroke="#cccccc" d="M494.89,-252C494.89,-252 275.46,-252 275.46,-252 269.46,-252 263.46,-246 263.46,-240 263.46,-240 263.46,-228 263.46,-228 263.46,-222 269.46,-216 275.46,-216 275.46,-216 494.89,-216 494.89,-216 500.89,-216 506.89,-222 506.89,-228 506.89,-228 506.89,-240 506.89,-240 506.89,-246 500.89,-252 494.89,-252"></path>
+<text text-anchor="middle" x="385.17" y="-229.8" font-family="Times,serif" font-size="14.00" fill="#cccccc">🔧 get_expected_number_of_passengers</text>
+</g>
+<!-- maintenance-scheduler&#45;&gt;get_expected_number_of_passengers -->
+<g id="edge2" class="edge">
+<title>maintenance_scheduler-&gt;get_expected_number_of_passengers</title>
+<path fill="none" stroke="#cccccc" d="M157.21,-170.07C186.7,-181.51 227.07,-196.37 263.46,-207 273.77,-210.01 284.65,-212.87 295.5,-215.54"></path>
+</g>
+<!-- schedule_maintenance -->
+<g id="node4" class="node">
+<title>schedule_maintenance</title>
+<path fill="none" stroke="#cccccc" d="M453.28,-198C453.28,-198 317.07,-198 317.07,-198 311.07,-198 305.07,-192 305.07,-186 305.07,-186 305.07,-174 305.07,-174 305.07,-168 311.07,-162 317.07,-162 317.07,-162 453.28,-162 453.28,-162 459.28,-162 465.28,-168 465.28,-174 465.28,-174 465.28,-186 465.28,-186 465.28,-192 459.28,-198 453.28,-198"></path>
+<text text-anchor="middle" x="385.17" y="-175.8" font-family="Times,serif" font-size="14.00" fill="#cccccc">🔧 schedule_maintenance</text>
+</g>
+<!-- maintenance-scheduler&#45;&gt;schedule_maintenance -->
+<g id="edge3" class="edge">
+<title>maintenance_scheduler-&gt;schedule_maintenance</title>
+<path fill="none" stroke="#cccccc" d="M210.87,-162.63C241.7,-165.72 275.47,-169.11 304.95,-172.06"></path>
+</g>
+<!-- get_current_time -->
+<g id="node5" class="node">
+<title>get_current_time</title>
+<path fill="none" stroke="#cccccc" d="M437.74,-144C437.74,-144 332.61,-144 332.61,-144 326.61,-144 320.61,-138 320.61,-132 320.61,-132 320.61,-120 320.61,-120 320.61,-114 326.61,-108 332.61,-108 332.61,-108 437.74,-108 437.74,-108 443.74,-108 449.74,-114 449.74,-120 449.74,-120 449.74,-132 449.74,-132 449.74,-138 443.74,-144 437.74,-144"></path>
+<text text-anchor="middle" x="385.17" y="-121.8" font-family="Times,serif" font-size="14.00" fill="#cccccc">🔧 get_current_time</text>
+</g>
+<!-- maintenance-scheduler&#45;&gt;get_current_time -->
+<g id="edge4" class="edge">
+<title>maintenance_scheduler-&gt;get_current_time</title>
+<path fill="none" stroke="#cccccc" d="M210.87,-143.37C247.14,-139.73 287.48,-135.69 320.12,-132.42"></path>
+</g>
+<!-- email_generator -->
+<g id="node6" class="node">
+<title>email_generator</title>
+<path fill="none" stroke="#cccccc" d="M435.4,-90C435.4,-90 334.95,-90 334.95,-90 328.95,-90 322.95,-84 322.95,-78 322.95,-78 322.95,-66 322.95,-66 322.95,-60 328.95,-54 334.95,-54 334.95,-54 435.4,-54 435.4,-54 441.4,-54 447.4,-60 447.4,-66 447.4,-66 447.4,-78 447.4,-78 447.4,-84 441.4,-90 435.4,-90"></path>
+<text text-anchor="middle" x="385.17" y="-67.8" font-family="Times,serif" font-size="14.00" fill="#cccccc">🤖 email_generator</text>
+</g>
+<!-- maintenance-scheduler&#45;&gt;email_generator -->
+<g id="edge5" class="edge">
+<title>maintenance_scheduler-&gt;email_generator</title>
+<path fill="none" stroke="#cccccc" d="M157.21,-135.93C186.7,-124.49 227.07,-109.63 263.46,-99 282.53,-93.43 303.58,-88.36 322.69,-84.16"></path>
+</g>
+<!-- is_time_on_weekend -->
+<g id="node7" class="node">
+<title>is_time_on_weekend</title>
+<path fill="none" stroke="#cccccc" d="M449.41,-36C449.41,-36 320.94,-36 320.94,-36 314.94,-36 308.94,-30 308.94,-24 308.94,-24 308.94,-12 308.94,-12 308.94,-6 314.94,0 320.94,0 320.94,0 449.41,0 449.41,0 455.41,0 461.41,-6 461.41,-12 461.41,-12 461.41,-24 461.41,-24 461.41,-30 455.41,-36 449.41,-36"></path>
+<text text-anchor="middle" x="385.17" y="-13.8" font-family="Times,serif" font-size="14.00" fill="#cccccc">🔧 is_time_on_weekend</text>
+</g>
+<!-- maintenance-scheduler&#45;&gt;is_time_on_weekend -->
+<g id="edge6" class="edge">
+<title>maintenance_scheduler-&gt;is_time_on_weekend</title>
+<path fill="none" stroke="#cccccc" d="M133.77,-135.13C160.59,-110.97 211.98,-68.24 263.46,-45 277.55,-38.64 293.27,-33.72 308.58,-29.93"></path>
+</g>
+</g>
+</svg>

@@ -29,7 +29,7 @@ def load_env():
 def test_eval_simple():
     """Test the agent's basic ability via a session file."""
     AgentEvaluator.evaluate(
-        "maintenance_scheduler",
+        "maintenance-scheduler",
         os.path.join(os.path.dirname(__file__), "eval_data/simple.test.json"),
         num_runs=1,
     )

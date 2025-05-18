@@ -256,7 +256,7 @@ def get_current_time() -> str:
       Returns current time
 
       Returns:
-        outcome of the scheduling. Can be "success", "failure", or "review"
+          Current time in New York, NY, USA
 
       Example:
           >>> get_current_time()

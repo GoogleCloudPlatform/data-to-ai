@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Callback functions for FOMC Research Agent."""
+"""Callback functions for Maintenance Scheduling Agent."""
 
 import logging
 import time
