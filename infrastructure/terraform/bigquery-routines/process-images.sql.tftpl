@@ -12,6 +12,7 @@ SET now = CURRENT_TIMESTAMP();
 CREATE TEMP TABLE new_reports AS
 WITH llm_response AS (
 SELECT uri,
+       content_type,
        updated,
        ml_generate_text_llm_result AS raw_response,
        `${clean_generate_text_json_function}`(ml_generate_text_llm_result) as cleaned_response,
@@ -32,6 +33,7 @@ FROM
 SELECT
     GENERATE_UUID() as report_id,
     uri,
+    content_type,
     updated,
     '${multimodal_model_id}' AS model_used,
     model_response_status,
@@ -39,6 +41,7 @@ SELECT
     cleaned_response,
     bus_stop_id,
     CAST (JSON_EXTRACT(cleaned_response, '$.cleanliness_level') AS INT64) AS cleanliness_level,
+    CAST (JSON_EXTRACT(cleaned_response, '$.safety_level') AS INT64) AS safety_level,
     JSON_EXTRACT(cleaned_response, '$.description') AS description,
     CAST (JSON_EXTRACT(cleaned_response, '$.is_bus_stop') AS BOOL) AS is_bus_stop,
     CAST (JSON_EXTRACT(cleaned_response, '$.number_of_people') AS INT64) AS number_of_people
@@ -72,8 +75,8 @@ BEGIN
 END;
 
 -- Insert new reports
-INSERT INTO `${reports_table}` (report_id, uri, image_created, model_used, bus_stop_id, cleanliness_level, description, number_of_people, is_bus_stop)
-SELECT report_id, uri, updated, model_used, bus_stop_id, cleanliness_level, description, number_of_people, is_bus_stop
+INSERT INTO `${reports_table}` (report_id, uri, content_type, image_created, model_used, bus_stop_id, cleanliness_level, safety_level, description, number_of_people, is_bus_stop)
+SELECT report_id, uri, content_type, updated, model_used, bus_stop_id, cleanliness_level, safety_level, description, number_of_people, is_bus_stop
   FROM new_reports;
 
 -- Generate multimodal embeddings

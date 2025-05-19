@@ -12,16 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Callback functions for FOMC Research Agent."""
+"""Callback functions for Maintenance Scheduling Agent."""
 
 import logging
 import time
 
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.models import LlmRequest
-from typing import Any, Dict
-from google.adk.tools import BaseTool
+from typing import Any, Dict, Optional
+from google.adk.tools import BaseTool, ToolContext
 from google.adk.agents.invocation_context import InvocationContext
+from google.genai.types import Part, FileData
+
+from maintenance_scheduler.entities.bus_stop import BusStopIncident
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -42,12 +45,11 @@ def rate_limit_callback(
     """
     for content in llm_request.contents:
         for part in content.parts:
-            if part.text=="":
-                part.text=" "
+            if part.text == "":
+                part.text = " "
 
     now = time.time()
     if "timer_start" not in callback_context.state:
-
         callback_context.state["timer_start"] = now
         callback_context.state["request_count"] = 1
         logger.debug(
@@ -97,7 +99,6 @@ def lowercase_value(value):
 def before_tool(
     tool: BaseTool, args: Dict[str, Any], tool_context: CallbackContext
 ):
-
     # i make sure all values that the agent is sending to tools are lowercase
     lowercase_value(args)
 
@@ -117,6 +118,26 @@ def before_tool(
             and args.get("items_removed") is True
         ):
             return {"result": "I have added and removed the requested items."}
+    return None
+
+
+def after_tool(
+    tool: BaseTool, args: Dict[str, Any], tool_context: ToolContext,
+    tool_response: Dict
+) -> Optional[Dict]:
+    logger.info("After tool: " + tool.name)
+    if tool.name == "get_unresolved_incidents" and False:
+        logger.info(f"Tool response: {tool_response}")
+        incident: BusStopIncident
+        for incident in tool_response:
+            logger.info("Adding artifact: " + incident.bus_stop.id)
+            tool_context.save_artifact(
+                filename="image-" + incident.bus_stop.id,
+                artifact=Part(
+                    file_data=
+                    FileData(file_uri=incident.source_image_uri,
+                             mime_type=incident.source_image_mime_type))
+            )
     return None
 
 

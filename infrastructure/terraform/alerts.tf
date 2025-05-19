@@ -13,6 +13,8 @@
 # limitations under the License.
 
 resource "google_monitoring_alert_policy" "incident_alert" {
+  # disable this resource, but leave for reference
+  count = 0
   display_name = "New Bus Stop Incident Alert Policy"
   combiner     = "OR"
 

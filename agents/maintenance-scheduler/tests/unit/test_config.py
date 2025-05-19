@@ -25,4 +25,4 @@ def conf():
 
 def test_settings_loading(conf):
     logging.info(conf.model_dump())
-    assert conf.agent_settings.model.startswith("gemini")
+    assert conf.root_agent_settings.model.startswith("gemini")

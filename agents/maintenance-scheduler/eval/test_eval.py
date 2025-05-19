@@ -11,31 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Customer entity module."""
 
-from typing import List, Dict, Optional
-from pydantic import BaseModel, Field, ConfigDict
+from google.adk.evaluation.agent_evaluator import AgentEvaluator
 
-class BusStop(BaseModel):
-    """
-    Represents a bus stop.
-    """
-
-    id: str
-    street: str
-    city: str
-    state: str
-    zip: str
-    model_config = ConfigDict(from_attributes=True)
+import os
+import pytest
+from dotenv import find_dotenv, load_dotenv
+from maintenance_scheduler.config import Config
 
 
-class BusStopIncident(BaseModel):
-    """
-    Represents an incident with a bus stop.
-    """
+@pytest.fixture(scope="session", autouse=True)
+def load_env():
+    load_dotenv(find_dotenv(".env"))
+    c = Config()
 
-    bus_stop: BusStop
-    source_image_url: str
-    # TODO: make an enum
-    status: str
-    model_config = ConfigDict(from_attributes=True)
+
+def test_eval_simple():
+    """Test the agent's basic ability via a session file."""
+    AgentEvaluator.evaluate(
+        "maintenance-scheduler",
+        os.path.join(os.path.dirname(__file__), "eval_data/simple.test.json"),
+        num_runs=1,
+    )

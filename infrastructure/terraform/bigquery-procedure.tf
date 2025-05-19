@@ -54,7 +54,7 @@ resource "google_bigquery_routine" "process_images_procedure" {
     reports_table                     = "${local.fq_dataset_id}.${google_bigquery_table.image_reports.table_id}"
     multimodal_model                  = "${local.fq_dataset_id}.${local.default_model_name}"
     text_embeddings_table             = "${local.fq_dataset_id}.${google_bigquery_table.text_embeddings.table_id}"
-    text_embeddings_model              = "${local.fq_dataset_id}.${local.text_embedding_model_name}"
+    text_embeddings_model             = "${local.fq_dataset_id}.${local.text_embedding_model_name}"
     multimodal_embeddings_table       = "${local.fq_dataset_id}.${google_bigquery_table.multimodal_embeddings.table_id}"
     multimodal_embedding_model        = "${local.fq_dataset_id}.${local.multimodal_embedding_model_name}"
     multimodal_model_id               = var.default_multimodal_vertex_ai_model
@@ -119,4 +119,79 @@ resource "google_bigquery_routine" "update_incidents_procedure" {
     incidents_table        = "${local.fq_dataset_id}.${google_bigquery_table.incidents.table_id}"
     reports_table          = "${local.fq_dataset_id}.${google_bigquery_table.image_reports.table_id}"
   })
+}
+
+locals {
+  time_zone = "America/New_York"
+}
+
+resource "google_bigquery_routine" "generate_number_of_riders" {
+  dataset_id   = local.dataset_id
+  routine_id   = "generate_number_of_riders"
+  routine_type = "SCALAR_FUNCTION"
+  language     = "SQL"
+
+  definition_body = templatefile("${path.module}/bigquery-routines/generate-number-of-riders.sql.tftpl", {
+        time_zone = local.time_zone
+  })
+
+  arguments {
+    name      = "base_number_of_riders"
+    data_type = "{\"typeKind\" :  \"INT64\"}"
+  }
+  arguments {
+    name      = "busy_in_morning"
+    data_type = "{\"typeKind\" :  \"BOOL\"}"
+  }
+  arguments {
+    name      = "busy_in_evening"
+    data_type = "{\"typeKind\" :  \"BOOL\"}"
+  }
+  arguments {
+    name      = "busy_on_weekend"
+    data_type = "{\"typeKind\" :  \"BOOL\"}"
+  }
+  arguments {
+    name      = "temperature"
+    data_type = "{\"typeKind\" :  \"FLOAT64\"}"
+  }
+  arguments {
+    name      = "precipitation"
+    data_type = "{\"typeKind\" :  \"FLOAT64\"}"
+  }
+  arguments {
+    name      = "event_ts"
+    data_type = "{\"typeKind\" :  \"TIMESTAMP\"}"
+  }
+  return_type = "{\"typeKind\" :  \"INT64\"}"
+}
+
+resource "google_bigquery_routine" "generate_synthetic_ridership" {
+  dataset_id      = local.dataset_id
+  routine_id      = "generate_synthetic_ridership"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = templatefile("${path.module}/bigquery-routines/generate-synthetic-ridership.sql.tftpl", {
+    bus_stops_table = "${local.fq_dataset_id}.${google_bigquery_table.bus_stops.table_id}"
+    bus_ridership_table        = "${local.fq_dataset_id}.${google_bigquery_table.bus_ridership.table_id}"
+    generate_number_of_riders_function = "${local.fq_dataset_id}.${google_bigquery_routine.generate_number_of_riders.routine_id}"
+  })
+}
+
+resource "google_bigquery_routine" "forecast_ridership_using_times_fm_model" {
+  dataset_id   = local.dataset_id
+  routine_id   = "forecast_ridership_using_times_fm_model"
+  routine_type = "TABLE_VALUED_FUNCTION"
+  language     = "SQL"
+
+  depends_on = [time_sleep.wait_for_text_embedding_model_creation]
+
+  definition_body = templatefile("${path.module}/bigquery-routines/forecast-ridership-using-times-fm-model.sql.tftpl", {
+    bus_ridership_table = "${local.fq_dataset_id}.${google_bigquery_table.bus_ridership.table_id}"
+  })
+  arguments {
+    name          = "bus_stop_ids"
+    argument_kind = "FIXED_TYPE"
+    data_type     = jsonencode({ "typeKind" : "ARRAY", "arrayElementType": {"typeKind": "STRING"} })
+  }
 }

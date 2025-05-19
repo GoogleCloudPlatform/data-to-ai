@@ -1,0 +1,51 @@
+DECLARE end_ts DEFAULT CURRENT_TIMESTAMP();
+-- One month worth of data
+DECLARE start_ts DEFAULT TIMESTAMP_SUB(end_ts, INTERVAL 31 DAY);
+
+INSERT INTO `${bus_ridership_table}` (bus_stop_id, event_ts, temperature, total_precipitation_6hr, num_riders)
+(
+WITH
+event_timestamps AS (
+  SELECT event_ts FROM
+    UNNEST(GENERATE_TIMESTAMP_ARRAY(start_ts, end_ts, INTERVAL 15 MINUTE)) as event_ts
+),
+bus_stop_stats AS (
+  SELECT bus_stop_id,
+    10 + CAST(RAND() * 10 AS INT64) as base_number_of_riders ,
+    RAND() < 0.5 as busy_in_morning,
+    RAND() < 0.5 as busy_in_evening,
+    RAND() < 0.5 as busy_on_weekend
+  FROM `${bus_stops_table}`
+),
+bus_stops_and_event_timestamps AS (
+  -- Cartesian join of the bus stops and time points
+  SELECT bus_stop_stats.*, event_ts FROM bus_stop_stats, event_timestamps
+),
+events_and_weather AS (
+  SELECT
+    bus_stop_id,
+    event_ts,
+    base_number_of_riders,
+    busy_in_morning,
+    busy_in_evening,
+    busy_on_weekend,
+    -- No real weather data
+    293.15 as temperature, -- temperature in K
+    0. as total_precipitation_6hr
+    FROM bus_stops_and_event_timestamps events
+)
+  SELECT
+    bus_stop_id,
+    event_ts,
+    temperature,
+    total_precipitation_6hr,
+    `${generate_number_of_riders_function}`(
+        base_number_of_riders,
+        busy_in_morning,
+        busy_in_evening,
+        busy_on_weekend,
+        temperature,
+        total_precipitation_6hr,
+        event_ts) num_riders
+    FROM events_and_weather
+);

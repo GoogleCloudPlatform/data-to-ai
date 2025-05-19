@@ -1,0 +1,74 @@
+[
+  {
+    "name": "bus_stop_id",
+    "mode": "REQUIRED",
+    "type": "STRING"
+  },
+  {
+    "name": "address",
+    "mode": "REQUIRED",
+    "type": "RECORD",
+    "fields": [
+      {
+        "name": "street",
+        "mode": "REQUIRED",
+        "type": "STRING"
+      },
+      {
+        "name": "city",
+        "mode": "REQUIRED",
+        "type": "STRING"
+      },
+      {
+        "name": "state",
+        "mode": "REQUIRED",
+        "type": "STRING"
+      },
+      {
+        "name": "zip",
+        "mode": "REQUIRED",
+        "type": "STRING"
+      }
+    ]
+  },
+  {
+    "name": "school_zone",
+    "mode": "REQUIRED",
+    "type": "BOOLEAN"
+  },
+  {
+    "name": "seating",
+    "mode": "REQUIRED",
+    "type": "BOOLEAN"
+  },
+  {
+    "name": "num_benches",
+    "mode": "REQUIRED",
+    "type": "INTEGER"
+  },
+  {
+    "name": "maps",
+    "mode": "REQUIRED",
+    "type": "BOOLEAN"
+  },
+  {
+    "name": "shelter_ads",
+    "mode": "REQUIRED",
+    "type": "BOOLEAN"
+  },
+  {
+    "name": "panel_type",
+    "mode": "NULLABLE",
+    "type": "STRING"
+  },
+  {
+    "name": "lighting",
+    "mode": "REQUIRED",
+    "type": "BOOLEAN"
+  },
+  {
+    "name": "location",
+    "mode": "REQUIRED",
+    "type": "GEOGRAPHY"
+  }
+]

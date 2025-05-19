@@ -18,19 +18,25 @@ import logging
 import warnings
 
 from google.adk import Agent
+from google.adk.planners import BuiltInPlanner
 from google.genai import types
+from google.genai.types import ThinkingConfig
 
 from .config import Config
-from .prompts import GLOBAL_INSTRUCTION, INSTRUCTION
+from .prompts import GLOBAL_INSTRUCTION, INSTRUCTION, AUTONOMOUS_INSTRUCTIONS, \
+    INTERACTIVE_INSTRUCTIONS
 from .shared_libraries.callbacks import (
-  rate_limit_callback,
-  before_agent,
-  before_tool,
+    rate_limit_callback,
+    before_agent,
+    before_tool, after_tool,
 )
+from .tools.email_content_generator import email_content_generator_tool
 from .tools.tools import (
-  get_unresolved_incidents,
-  get_expected_number_of_passengers,
-  schedule_maintenance
+    get_unresolved_incidents,
+    get_expected_number_of_passengers,
+    schedule_maintenance,
+    get_current_time,
+    is_time_on_weekend
 )
 
 warnings.filterwarnings("ignore", category=UserWarning, module=".*pydantic.*")
@@ -41,31 +47,41 @@ configs = Config()
 logger = logging.getLogger(__name__)
 
 safety_settings = [
-  types.SafetySetting(
-      category=types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-      threshold=types.HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
-  ),
+    types.SafetySetting(
+        category=types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+        threshold=types.HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+    ),
 ]
 
 generate_content_config = types.GenerateContentConfig(
     safety_settings=safety_settings,
-    temperature=0.3,
+    temperature=0.1,
     max_output_tokens=3000,
     top_k=0.1,
     top_p=0.95,
 )
 
 root_agent = Agent(
-    name=configs.agent_settings.name,
-    model=configs.agent_settings.model,
-    global_instruction=GLOBAL_INSTRUCTION,
+    name=configs.root_agent_settings.name,
+    model=configs.root_agent_settings.model,
+    description=configs.root_agent_settings.description,
+    global_instruction=
+    GLOBAL_INSTRUCTION
+    + (AUTONOMOUS_INSTRUCTIONS if configs.autonomous
+    else INTERACTIVE_INSTRUCTIONS),
     instruction=INSTRUCTION,
+    planner=BuiltInPlanner(
+        thinking_config=ThinkingConfig(include_thoughts=True)),
     tools=[
-      get_unresolved_incidents,
-      get_expected_number_of_passengers,
-      schedule_maintenance
+        get_unresolved_incidents,
+        get_expected_number_of_passengers,
+        schedule_maintenance,
+        get_current_time,
+        email_content_generator_tool,
+        is_time_on_weekend
     ],
     before_tool_callback=before_tool,
+    after_tool_callback=after_tool,
     before_agent_callback=before_agent,
     before_model_callback=rate_limit_callback,
 )

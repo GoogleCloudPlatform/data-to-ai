@@ -12,6 +12,11 @@
   },
   {
     "mode": "REQUIRED",
+    "name": "content_type",
+    "type": "STRING"
+  },
+  {
+    "mode": "REQUIRED",
     "name": "image_created",
     "type": "TIMESTAMP"
   },
@@ -28,6 +33,11 @@
   {
     "mode": "REQUIRED",
     "name": "cleanliness_level",
+    "type": "INT64"
+  },
+  {
+    "mode": "REQUIRED",
+    "name": "safety_level",
     "type": "INT64"
   },
   {

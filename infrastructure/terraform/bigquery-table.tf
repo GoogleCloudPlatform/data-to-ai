@@ -244,3 +244,78 @@ resource "google_bigquery_table" "multimodal_embeddings" {
     }
   }
 }
+
+resource "google_bigquery_table" "bus_stops" {
+  deletion_protection = false
+  dataset_id          = local.dataset_id
+  table_id            = "bus_stops"
+  description         = "Bus stops"
+  clustering          = ["bus_stop_id"]
+  schema              = file("${path.module}/bigquery-schema/bus_stops.json")
+
+  table_constraints {
+    primary_key {
+      columns = ["bus_stop_id"]
+    }
+  }
+}
+
+resource "random_id" "load_bus_stops_job_id_suffix" {
+  byte_length = 4
+  keepers     = {
+    table_creation_itme = google_bigquery_table.bus_stops.creation_time
+  }
+}
+
+resource "google_bigquery_job" "populate_bus_stops" {
+  job_id     = "load_bus_stop_data_${random_id.load_bus_stops_job_id_suffix.hex}"
+  depends_on = [google_bigquery_table.bus_stops]
+
+  query {
+    query             = <<-EOS
+    LOAD DATA INTO ${local.dataset_id}.${google_bigquery_table.bus_stops.table_id}_temp
+      FROM FILES (
+      format = 'NEWLINE_DELIMITED_JSON',
+      json_extension = 'GEOJSON',
+      uris = ['gs://bus-stops-open-access/loader-data/bus_stops000000000000.json']);
+
+    INSERT INTO ${local.dataset_id}.${google_bigquery_table.bus_stops.table_id} (
+        bus_stop_id,
+        address,
+        school_zone,
+        seating,
+        num_benches,
+        maps,
+        shelter_ads,
+        panel_type,
+        lighting,
+        location)
+      SELECT CAST(bus_stop_id AS STRING)
+        bus_stop_id,
+        STRUCT(street_address as street, 'Anytown' as city, 'NY' as state, '10001' as zip) as address,
+        school_zone,
+        seating,
+        IF(num_benches = -1, 0, num_benches) num_benches,
+        maps,
+        shelter_ads,
+        panel_type,
+        lighting,
+        geometry
+       FROM ${local.dataset_id}.${google_bigquery_table.bus_stops.table_id}_temp;
+
+    DROP TABLE ${local.dataset_id}.${google_bigquery_table.bus_stops.table_id}_temp;
+    EOS
+    create_disposition = ""
+    write_disposition  = ""
+  }
+  location = var.bigquery_dataset_location
+}
+
+resource "google_bigquery_table" "bus_ridership" {
+  deletion_protection = false
+  dataset_id          = local.dataset_id
+  table_id            = "bus_ridership"
+  description         = "Number of riders at a particular bus stop"
+  clustering          = ["bus_stop_id"]
+  schema              = file("${path.module}/bigquery-schema/bus_ridership.json")
+}

@@ -29,11 +29,8 @@ logger = logging.getLogger(__name__)
 
 configs = Config()
 
-STAGING_BUCKET = f"gs://{configs.CLOUD_PROJECT}-maintenance_scheduler-agent-staging"
+STAGING_BUCKET = f"gs://{configs.CLOUD_PROJECT}-maintenance-scheduler-agent-staging"
 
-ADK_WHL_FILE = (
-  "./google_adk-0.0.2.dev20250404+nightly743987168-py3-none-any.whl"
-)
 AGENT_WHL_FILE = "./maintenance_scheduler-0.1.0-py3-none-any.whl"
 
 vertexai.init(
@@ -67,14 +64,13 @@ if args.delete:
   try:
     agent_engines.get(resource_name=args.resource_id)
     agent_engines.delete(resource_name=args.resource_id)
-    print(f"Agent {args.resource_id} deleted successfully")
+    logging.info(f"Agent {args.resource_id} deleted successfully")
   except NotFound as e:
-    print(e)
-    print(f"Agent {args.resource_id} not found")
+    logging.error(e)
+    logging.error(f"Agent {args.resource_id} not found")
 
 else:
   logger.info("deploying app...")
-  # TODO: add
   app = AdkApp(agent=root_agent, enable_tracing=False)
 
   logging.debug("deploying agent to agent engine:")
@@ -94,6 +90,6 @@ else:
       message="hello!",
   ):
     if event.get("content", None):
-      print(
+      logging.info(
           f"Agent deployed successfully under resource name: {remote_app.resource_name}"
       )
