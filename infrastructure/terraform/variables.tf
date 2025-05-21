@@ -39,7 +39,7 @@ variable "pause_scheduler" {
 }
 variable "notification_email" {
   description = "Email address to send new incident alert notifications"
-  default     = "cymbal@example.goog",
+  default     = "cymbal@example.goog"
   type        = string
 }
 
