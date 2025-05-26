@@ -16,12 +16,11 @@
 
 import logging
 import time
+from typing import Any, Dict, Optional
 
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.models import LlmRequest
-from typing import Any, Dict, Optional
 from google.adk.tools import BaseTool, ToolContext
-from google.adk.agents.invocation_context import InvocationContext
 from google.genai.types import Part, FileData
 
 from maintenance_scheduler.entities.bus_stop import BusStopIncident
@@ -95,37 +94,12 @@ def lowercase_value(value):
         return value
 
 
-# Callback Methods
-def before_tool(
-    tool: BaseTool, args: Dict[str, Any], tool_context: CallbackContext
-):
-    # i make sure all values that the agent is sending to tools are lowercase
-    lowercase_value(args)
-
-    # Check for the next tool call and then act accordingly.
-    # Example logic based on the tool being called.
-    if tool.name == "sync_ask_for_approval":
-        amount = args.get("value", None)
-        if amount <= 10:  # Example business rule
-            return {
-                "result": "You can approve this discount; no manager needed."
-            }
-        # Add more logic checks here as needed for your tools.
-
-    if tool.name == "modify_cart":
-        if (
-            args.get("items_added") is True
-            and args.get("items_removed") is True
-        ):
-            return {"result": "I have added and removed the requested items."}
-    return None
-
-
 def after_tool(
     tool: BaseTool, args: Dict[str, Any], tool_context: ToolContext,
     tool_response: Dict
 ) -> Optional[Dict]:
     logger.info("After tool: " + tool.name)
+    # Temporarily disabled as artifacts don't work with references.
     if tool.name == "get_unresolved_incidents" and False:
         logger.info(f"Tool response: {tool_response}")
         incident: BusStopIncident
@@ -134,19 +108,7 @@ def after_tool(
             tool_context.save_artifact(
                 filename="image-" + incident.bus_stop.id,
                 artifact=Part(
-                    file_data=
-                    FileData(file_uri=incident.source_image_uri,
-                             mime_type=incident.source_image_mime_type))
+                    file_data=FileData(file_uri=incident.source_image_uri,
+                                       mime_type=incident.source_image_mime_type))
             )
     return None
-
-
-# checking that the customer profile is loaded as state.
-def before_agent(callback_context: InvocationContext):
-    return
-    # if "customer_profile" not in callback_context.state:
-    #     callback_context.state["customer_profile"] = Customer.get_customer(
-    #         "123"
-    #     ).to_json()
-
-    # logger.info(callback_context.state["customer_profile"])

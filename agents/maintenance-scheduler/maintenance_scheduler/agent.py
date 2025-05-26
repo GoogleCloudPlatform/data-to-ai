@@ -27,8 +27,7 @@ from .prompts import GLOBAL_INSTRUCTION, INSTRUCTION, AUTONOMOUS_INSTRUCTIONS, \
     INTERACTIVE_INSTRUCTIONS
 from .shared_libraries.callbacks import (
     rate_limit_callback,
-    before_agent,
-    before_tool, after_tool,
+    after_tool,
 )
 from .tools.email_content_generator import email_content_generator_tool
 from .tools.tools import (
@@ -57,18 +56,18 @@ generate_content_config = types.GenerateContentConfig(
     safety_settings=safety_settings,
     temperature=0.1,
     max_output_tokens=3000,
-    top_k=0.1,
+    top_k=2,
     top_p=0.95,
 )
 
 root_agent = Agent(
     name=configs.root_agent_settings.name,
+    generate_content_config=generate_content_config,
     model=configs.root_agent_settings.model,
     description=configs.root_agent_settings.description,
-    global_instruction=
-    GLOBAL_INSTRUCTION
-    + (AUTONOMOUS_INSTRUCTIONS if configs.autonomous
-    else INTERACTIVE_INSTRUCTIONS),
+    global_instruction=GLOBAL_INSTRUCTION
+                       + (AUTONOMOUS_INSTRUCTIONS if configs.autonomous
+                          else INTERACTIVE_INSTRUCTIONS),
     instruction=INSTRUCTION,
     planner=BuiltInPlanner(
         thinking_config=ThinkingConfig(include_thoughts=True)),
@@ -80,8 +79,6 @@ root_agent = Agent(
         email_content_generator_tool,
         is_time_on_weekend
     ],
-    before_tool_callback=before_tool,
     after_tool_callback=after_tool,
-    before_agent_callback=before_agent,
     before_model_callback=rate_limit_callback,
 )

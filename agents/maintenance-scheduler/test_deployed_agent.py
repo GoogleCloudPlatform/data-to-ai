@@ -1,6 +1,5 @@
 import vertexai
 from maintenance_scheduler.config import Config
-# from vertexai.preview.reasoning_engines import AdkApp
 
 configs = Config()
 
@@ -12,11 +11,12 @@ vertexai.init(
 # get the agent based on resource id
 remote_app = vertexai.agent_engines.get(configs.AGENT_RESOURCE_ID)
 
-session = remote_app.create_session(user_id="123")
+user_id = "supervisor"
+session = remote_app.create_session(user_id=user_id)
 
 for event in remote_app.stream_query(
-    user_id="abc",
+    user_id=user_id,
     session_id=session["id"],
-    message="I am looking for some fertilizer. Can you help me?",
+    message="Check if there is any bus stop maintenance needed",
 ):
   print(event)

@@ -35,7 +35,7 @@ config = Config()
 
 logger = logging.getLogger(__name__)
 
-time_zone = ZoneInfo("america/new_york")
+time_zone = ZoneInfo("America/New_York")
 
 
 def get_unresolved_incidents() -> List[BusStopIncident]:

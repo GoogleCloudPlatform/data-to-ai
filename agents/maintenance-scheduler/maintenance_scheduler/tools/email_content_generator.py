@@ -31,12 +31,15 @@ email_notification_generator = Agent(
     name=configs.email_generator_agent_settings.name,
     description=configs.email_generator_agent_settings.description,
     model=configs.email_generator_agent_settings.model,
-    instruction=
-    "Generate an email explaining the work that needs to be done to fix the bus stop. "
-    "Include the bus stop id, bus stop image, reason for maintenance and the time when the maintenance needs to occur.",
+    instruction="Generate an email explaining the work that needs to be done"
+                " to fix the bus stop. "
+                "Include the bus stop id, bus stop image, reason for "
+                "maintenance and the time when the maintenance needs to occur.",
     # input_schema=MaintenanceNotification,
     output_schema=Email,
-    output_key="email"
+    output_key="email",
+    disallow_transfer_to_parent=True,
+    disallow_transfer_to_peers=True
 )
 
 email_content_generator_tool = \

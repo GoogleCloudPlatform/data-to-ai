@@ -24,7 +24,7 @@ from vertexai.preview.reasoning_engines import AdkApp
 from maintenance_scheduler.agent import root_agent
 from maintenance_scheduler.config import Config
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 configs = Config()
@@ -63,7 +63,7 @@ args = parser.parse_args()
 if args.delete:
   try:
     agent_engines.get(resource_name=args.resource_id)
-    agent_engines.delete(resource_name=args.resource_id)
+    agent_engines.delete(resource_name=args.resource_id, force=True)
     logging.info(f"Agent {args.resource_id} deleted successfully")
   except NotFound as e:
     logging.error(e)
@@ -76,18 +76,21 @@ else:
   logging.debug("deploying agent to agent engine:")
   remote_app = agent_engines.create(
       app,
+      display_name="Bus Maintenance Scheduler",
+      description="Agent to assist with bus scheduling",
       requirements=[
         AGENT_WHL_FILE,
       ],
       extra_packages=[AGENT_WHL_FILE],
   )
 
+  user_id = "supervisor"
   logging.debug("testing deployment:")
-  session = remote_app.create_session(user_id="123")
+  session = remote_app.create_session(user_id=user_id)
   for event in remote_app.stream_query(
-      user_id="123",
+      user_id=user_id,
       session_id=session["id"],
-      message="hello!",
+      message="Check if there is a need to schedule any bus stop maintenance",
   ):
     if event.get("content", None):
       logging.info(
