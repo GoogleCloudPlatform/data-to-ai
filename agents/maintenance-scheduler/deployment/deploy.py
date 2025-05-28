@@ -29,7 +29,8 @@ logger = logging.getLogger(__name__)
 
 configs = Config()
 
-STAGING_BUCKET = f"gs://{configs.CLOUD_PROJECT}-maintenance-scheduler-agent-staging"
+STAGING_BUCKET = f"gs://{configs.CLOUD_PROJECT}-" \
+                 f"maintenance-scheduler-agent-staging"
 
 AGENT_WHL_FILE = "./maintenance_scheduler-0.1.0-py3-none-any.whl"
 
@@ -61,38 +62,45 @@ parser.add_argument(
 args = parser.parse_args()
 
 if args.delete:
-  try:
-    agent_engines.get(resource_name=args.resource_id)
-    agent_engines.delete(resource_name=args.resource_id, force=True)
-    logging.info(f"Agent {args.resource_id} deleted successfully")
-  except NotFound as e:
-    logging.error(e)
-    logging.error(f"Agent {args.resource_id} not found")
+    try:
+        agent_engines.get(resource_name=args.resource_id)
+        agent_engines.delete(resource_name=args.resource_id, force=True)
+        logging.info(f"Agent {args.resource_id} deleted successfully")
+    except NotFound as e:
+        logging.error(e)
+        logging.error(f"Agent {args.resource_id} not found")
 
 else:
-  logger.info("deploying app...")
-  app = AdkApp(agent=root_agent, enable_tracing=False)
+    logger.info("deploying app...")
+    app = AdkApp(agent=root_agent, enable_tracing=False)
 
-  logging.debug("deploying agent to agent engine:")
-  remote_app = agent_engines.create(
-      app,
-      display_name="Bus Maintenance Scheduler",
-      description="Agent to assist with bus scheduling",
-      requirements=[
-        AGENT_WHL_FILE,
-      ],
-      extra_packages=[AGENT_WHL_FILE],
-  )
+    logging.debug("deploying agent to agent engine:")
+    remote_app = agent_engines.create(
+        app,
+        display_name="Bus Maintenance Scheduler",
+        description="Agent to assist with bus scheduling",
+        requirements=[
+            AGENT_WHL_FILE,
+        ],
+        extra_packages=[AGENT_WHL_FILE],
+        env_vars={
+            "GOOGLE_autonomous": "True"
+        }
+    )
 
-  user_id = "supervisor"
-  logging.debug("testing deployment:")
-  session = remote_app.create_session(user_id=user_id)
-  for event in remote_app.stream_query(
-      user_id=user_id,
-      session_id=session["id"],
-      message="Check if there is a need to schedule any bus stop maintenance",
-  ):
-    if event.get("content", None):
-      logging.info(
-          f"Agent deployed successfully under resource name: {remote_app.resource_name}"
-      )
+    user_id = "supervisor"
+    logging.debug("testing deployment:")
+    session = remote_app.create_session(user_id=user_id)
+    for event in remote_app.stream_query(
+        user_id=user_id,
+        session_id=session["id"],
+        # We should ask the agent to schedule any actual maintenance because it
+        # will most likely process everything right away.
+        message="Is now a weekend?",
+    ):
+        if event.get("content", None):
+            # TODO: log the response
+            logging.info(
+                f"Agent deployed successfully under resource name: "
+                f"{remote_app.resource_name}"
+            )
