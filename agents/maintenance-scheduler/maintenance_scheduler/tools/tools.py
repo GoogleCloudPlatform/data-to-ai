@@ -48,7 +48,7 @@ def get_unresolved_incidents() -> List[BusStopIncident]:
 
       Example:
           >>> get_unresolved_incidents()
-          [BusStopIncident(bus_stop=BusStop(id="123", street='123 Main', city='Anytown', state='CA', zip='94100'), source_image_uri='https://storage.mtls.cloud.google.com/event-processing-demo-multimodal/sources/MA-02-broken-glass.jpg', status='open')]
+          [BusStopIncident(bus_stop=BusStop(id='5', address=USAddress(street='4999 list Avenue', city='Anytown', state='NY', zip='10001')), source_image_uri='gs://my-bucket-bus-stop-images/images/PA-02.jpg', source_image_mime_type='image/jpeg', status='open', description='"The bus stop appears to have some cleanliness issues. There is litter and dead leaves on the sidewalk and along the curb. The trash can is open and appears to have some trash inside. The bench has some wear and tear, but does not appear to be damaged. There are no obvious safety hazards. The bus stop includes a bench and a trash can. There is a bus stop sign visible in the background."'), BusStopIncident(bus_stop=BusStop(id='7', address=USAddress(street='3643 Tasmanian devil Street', city='Anytown', state='NY', zip='10001')), source_image_uri='gs://my-bucket-bus-stop-images/images/PC-01.jpg', source_image_mime_type='image/jpeg', status='open', description='"The bus stop appears to have a bench, a trash can, and a bus stop sign. The bench has some wear and tear, and there are leaves on the ground around the bench, indicating a need for cleaning. The trash can is present, which is good for cleanliness. There is no visible graffiti or damage to the bus stop amenities. The red curb is in good condition. The overall cleanliness is slightly compromised by the leaves and general wear, warranting a cleaning."')]
       """
 
     logger.info("Getting the list of incidents")
@@ -91,7 +91,7 @@ def get_unresolved_incidents() -> List[BusStopIncident]:
     for row in rows:
         result.append(BusStopIncident(
             status=row.status.lower(),
-            source_image_uri=row.source_image_uri,
+            source_image_uri=row.source_image_uri.replace("gs://", "https://storage.mtls.cloud.google.com/"),
             source_image_mime_type=row.source_image_mime_type,
             description=row.description,
             bus_stop=BusStop(
@@ -104,6 +104,7 @@ def get_unresolved_incidents() -> List[BusStopIncident]:
             )
         ))
 
+    logger.info("Retrieved incidents: %s", result)
     return result
 
 
@@ -276,4 +277,7 @@ def is_time_on_weekend(day: int, month: int, year: int) -> bool:
 
     date = datetime(year, month, day)
 
-    return date.weekday() > 4
+    is_weekend = date.weekday() > 4
+    logger.info("Is day a weekend: %s %s %s: %s", year, month, day, is_weekend)
+
+    return {"is_weekend": is_weekend}

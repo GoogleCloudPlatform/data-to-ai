@@ -19,9 +19,11 @@ import logging
 
 from google.adk.agents import Agent
 from google.adk.tools import agent_tool
+from .email_content_generator_prompts import INSTRUCTION
 
 from maintenance_scheduler.config import Config
-from maintenance_scheduler.entities.notification import Email
+from maintenance_scheduler.entities.notification import Email, \
+    MaintenanceNotification
 
 configs = Config()
 
@@ -31,11 +33,8 @@ email_notification_generator = Agent(
     name=configs.email_generator_agent_settings.name,
     description=configs.email_generator_agent_settings.description,
     model=configs.email_generator_agent_settings.model,
-    instruction="Generate an email explaining the work that needs to be done"
-                " to fix the bus stop. "
-                "Include the bus stop id, bus stop image, reason for "
-                "maintenance and the time when the maintenance needs to occur.",
-    # input_schema=MaintenanceNotification,
+    instruction=INSTRUCTION,
+    input_schema=MaintenanceNotification,
     output_schema=Email,
     output_key="email",
     disallow_transfer_to_parent=True,

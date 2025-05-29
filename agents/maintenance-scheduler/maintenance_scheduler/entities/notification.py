@@ -29,6 +29,7 @@ class MaintenanceNotification(BaseModel):
     city: str = Field(description="Bus stop city")
     state: str = Field(description="Bus stop state")
     zip: str = Field(description="Bus stop zip")
+    image: str = Field(description="Image of the bus stop")
     model_config = ConfigDict(from_attributes=True)
 
 
