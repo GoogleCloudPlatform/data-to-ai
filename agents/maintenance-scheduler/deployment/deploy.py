@@ -71,10 +71,9 @@ if args.delete:
         logging.error(f"Agent {args.resource_id} not found")
 
 else:
-    logger.info("deploying app...")
     app = AdkApp(agent=root_agent, enable_tracing=False)
 
-    logging.debug("deploying agent to agent engine:")
+    logging.info("deploying agent to agent engine:")
     remote_app = agent_engines.create(
         app,
         display_name="Bus Maintenance Scheduler",
@@ -84,23 +83,25 @@ else:
         ],
         extra_packages=[AGENT_WHL_FILE],
         env_vars={
-            "GOOGLE_autonomous": "True"
+            "GOOGLE_autonomous": "False",
+            "GOOGLE_show_thoughts": "False"
         }
     )
 
     user_id = "supervisor"
     logging.debug("testing deployment:")
     session = remote_app.create_session(user_id=user_id)
+    need_to_print_resource_name = True
     for event in remote_app.stream_query(
         user_id=user_id,
         session_id=session["id"],
-        # We should ask the agent to schedule any actual maintenance because it
-        # will most likely process everything right away.
+        # We shouldn't ask the agent to schedule any actual maintenance
+        # because it will most likely process everything right away.
         message="Is now a weekend?",
     ):
-        if event.get("content", None):
-            # TODO: log the response
+        if need_to_print_resource_name and event.get("content", None):
             logging.info(
                 f"Agent deployed successfully under resource name: "
                 f"{remote_app.resource_name}"
             )
+            need_to_print_resource_name = False

@@ -70,7 +70,7 @@ root_agent = Agent(
                           else INTERACTIVE_INSTRUCTIONS),
     instruction=INSTRUCTION,
     planner=BuiltInPlanner(
-        thinking_config=ThinkingConfig(include_thoughts=True)),
+        thinking_config=ThinkingConfig(include_thoughts=configs.show_thoughts)),
     tools=[
         get_unresolved_incidents,
         get_expected_number_of_passengers,

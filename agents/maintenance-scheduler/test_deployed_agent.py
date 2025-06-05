@@ -28,7 +28,7 @@ vertexai.init(
 )
 
 # get the agent based on resource id
-remote_app = vertexai.agent_engines.get(configs.AGENT_RESOURCE_ID)
+remote_app = vertexai.agent_engines.get(configs.AGENT_RESOURCE_NAME)
 
 user_id = "supervisor"
 session = remote_app.create_session(user_id=user_id)

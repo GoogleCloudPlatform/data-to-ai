@@ -153,7 +153,7 @@ from the root project directory:
 
 You can find further configuration parameters in [maintenance_scheduler/config.py](maintenance_scheduler/config.py). This includes parameters such as agent name, app name and LLM model used by the agent.
 
-## Deployment on Google Agent Engine
+## Deployment to Google Agent Engine
 
 In order to inherit all dependencies of your agent you can build the wheel file of the agent and run the deployment.
 
@@ -170,58 +170,84 @@ In order to inherit all dependencies of your agent you can build the wheel file 
     cd deployment
     python deploy.py
     ```
+   
+3. **Capture the deployed agent's resource name
+    If the deployment successful, the script will print a line similar to this:
+    ```shell
+    INFO:root:Agent deployed successfully under resource name: projects/443345511836/locations/us-central1/reasoningEngines/1008428084531036160
+    ```
+    Capture the resource name and update `GOOGLE_AGENT_RESOURCE_NAME` variable in the `.env` file.
+
 3. **Grant the service account running the engine required permissions**
     When the agent is deployed to the Agent Engine it is run in the context of a 
     particular service account. Please see [Vertex AI Documentation](https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/set-up#service-agent) for details.
     
     The agent uses tools which need access to the BigQuery data and need to be able to run queries.
     The Terraform script [agent-engine.tf](../../infrastructure/terraform/agent-engine.tf) added all the necessary permissions.
-    If you need to add additional permissions you can use the script below as an example to manually add them.
-```bash
-gcloud beta services identity create --service=aiplatform.googleapis.com --project=${GOOGLE_CLOUD_PROJECT}
-GOOGLE_CLOUD_PROJECT_NUMBER=$(gcloud projects describe ${GOOGLE_CLOUD_PROJECT} --format="value(projectNumber)")
-AGENT_ENGINE_SA="service-${GOOGLE_CLOUD_PROJECT_NUMBER}@gcp-sa-aiplatform-re.iam.gserviceaccount.com"
-bq add-iam-policy-binding --member="serviceAccount:${AGENT_ENGINE_SA}" --role='roles/bigquery.dataEditor' "${GOOGLE_CLOUD_PROJECT}:bus_sto
-bq add-iam-policy-binding --member="serviceAccount:${AGENT_ENGINE_SA}" --role='roles/bigquery.dataViewer' "${GOOGLE_CLOUD_PROJECT}:bus_sto
-bq add-iam-policy-binding --member="serviceAccount:${AGENT_ENGINE_SA}" --role='roles/bigquery.dataViewer' "${GOOGLE_CLOUD_PROJECT}:bus_sto
-p_image_processing.bus_stops"
+    If you need to add additional permissions you can use the script below as an example to manually add them:
+
+    ```bash
+    gcloud beta services identity create --service=aiplatform.googleapis.com --project=${GOOGLE_CLOUD_PROJECT}
+    GOOGLE_CLOUD_PROJECT_NUMBER=$(gcloud projects describe ${GOOGLE_CLOUD_PROJECT} --format="value(projectNumber)")
+    AGENT_ENGINE_SA="service-${GOOGLE_CLOUD_PROJECT_NUMBER}@gcp-sa-aiplatform-re.iam.gserviceaccount.com"
+    bq add-iam-policy-binding --member="serviceAccount:${AGENT_ENGINE_SA}" --role='roles/bigquery.dataEditor' "${GOOGLE_CLOUD_PROJECT}:bus_sto
+    bq add-iam-policy-binding --member="serviceAccount:${AGENT_ENGINE_SA}" --role='roles/bigquery.dataViewer' "${GOOGLE_CLOUD_PROJECT}:bus_sto
+    bq add-iam-policy-binding --member="serviceAccount:${AGENT_ENGINE_SA}" --role='roles/bigquery.dataViewer' "${GOOGLE_CLOUD_PROJECT}:bus_sto
+    p_image_processing.bus_stops"
+    ```
+
+### Testing the Agent Engine deployment
+
+1. **Run the test script**
+    At the agents/maintenance-scheduler directory run:
+    ```bash
+    python test_deployed_agent.py
+    ```
+    
+    You should see output similar to this:
+    ```text
+    {'content': {'parts': [{'thought': True,
+                        'text': "Alright, here's what's running through my "
+                                "mind: The user's asking about bus stop "
+                                'maintenance. Before I give them an answer, I '
+                                'need to check the system for any outstanding '
+                                "issues. My first step is clear: I'll leverage "
+                                "the `get_unresolved_incidents` tool. That'll "
+                                'pull up a list of any open bus stop '
+                                'maintenance requests.\n'
+                                '\n'
+                                "Once I get the data back, I'll interpret the "
+                                'results. If the list is empty – fantastic! I '
+                                'can tell the user straight away that '
+                                "everything's in good shape, no immediate "
+                                'action needed. But if there *are* open '
+                                "incidents, I'll need to be more specific. "
+                                "I'll let the user know maintenance is "
+                                'required and perhaps even provide a quick '
+                                "summary of the types of issues we're dealing "
+                                'with.\n'
+                     ...
+   ```
+## Deployment to Agentspace
+
+One the Agent Engine deployment is successful, the agent can be enabled on an Agentspace app.
+Agentspace will be the UI of the agent.
+
+### Create a new Agentspace instance
+
+Once the instance is created, capture the so-called "app id" of that instance and
+update the `AGENTSPACE_APP_ID` variable in the `.env` file.
+
+### Deploy the agent into the Agentspace
+Run the following script:
+
+```shell
+./register-with-agentspace.sh
 ```
 
-### Testing deployment
+### Use the agent
+Navigate to the Agentspace app and click on the Bus Stop Maintenance Scheduler link
+under the Agents menu.
 
-1. **Update .env file with the agent id**
-    When the deployment is successful, the last line of the output will be: 
-    "Agent deployed successfully under resource name: projects/XXX/locations/us-central1/reasoningEngines/YYY"
-Copy the resource name and update the environment variable `GOOGLE_AGENT_RESOURCE_ID` in `.env` file.
-
-   2. **Run the test script**
-       At the agents/maintenance-scheduler directory run:
-       ```bash
-       python test_deployed_agent.py
-       ```
-    
-       You should see output similar to this:
-       ```json
-       {'content': {'parts': [{'thought': True,
-                           'text': "Alright, here's what's running through my "
-                                   "mind: The user's asking about bus stop "
-                                   'maintenance. Before I give them an answer, I '
-                                   'need to check the system for any outstanding '
-                                   "issues. My first step is clear: I'll leverage "
-                                   "the `get_unresolved_incidents` tool. That'll "
-                                   'pull up a list of any open bus stop '
-                                   'maintenance requests.\n'
-                                   '\n'
-                                   "Once I get the data back, I'll interpret the "
-                                   'results. If the list is empty – fantastic! I '
-                                   'can tell the user straight away that '
-                                   "everything's in good shape, no immediate "
-                                   'action needed. But if there *are* open '
-                                   "incidents, I'll need to be more specific. "
-                                   "I'll let the user know maintenance is "
-                                   'required and perhaps even provide a quick '
-                                   "summary of the types of issues we're dealing "
-                                   'with.\n'
-                        ...
-   ```
+Use the agent the way you used it when testing the agent locally.
 

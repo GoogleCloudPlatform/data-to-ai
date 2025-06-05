@@ -29,13 +29,11 @@ class AgentModel(BaseModel):
 
     name: str = Field(description="Agent name. Must be a valid identifier")
     description: str = Field(description="Agent description")
-    # model: str = Field(default="gemini-2.5-flash-preview-04-17")
-    model: str = Field(default="gemini-2.0-flash-001",
-                       description="Model used by the agent")
+    model: str = Field(description="Model used by the agent")
 
 
 class Config(BaseSettings):
-    """Configuration settings for the customer service agent."""
+    """Configuration settings for the scheduling agent."""
 
     model_config = SettingsConfigDict(
         env_file=os.path.join(
@@ -50,7 +48,8 @@ class Config(BaseSettings):
                            model="gemini-2.5-pro-preview-05-06"))
     email_generator_agent_settings: AgentModel = Field(
         default=AgentModel(name="email_generator",
-                           description="Email content generator"))
+                           description="Email content generator",
+                           model="gemini-2.0-flash-001"))
     app_name: str = "Maintenance Scheduler Agent"
     autonomous: bool = Field(default=False,
                              description="Indicates if agent needs to work autonomously (without prompting the user)")
@@ -58,11 +57,16 @@ class Config(BaseSettings):
     CLOUD_BIGQUERY_DATA_PROJECT: str = Field(default="")
     CLOUD_BIGQUERY_RUN_PROJECT: str = Field(default="")
     CLOUD_LOCATION: str = Field(default="us-central1")
-    AGENT_RESOURCE_ID: str = Field(default="UNKNOWN")
+    AGENT_RESOURCE_NAME: str = Field(default="UNKNOWN")
     GENAI_USE_VERTEXAI: str = Field(default="1")
+    AGENTSPACE_APP_ID: str = Field(default="None", description="Agentspace app id. Only used when deployment to Agentspace is needed.")
     API_KEY: str | None = Field(default="")
-    mock_tools: bool = Field(default=False,
-                             description="Indicates if tools need to produce mock output")
+    mock_tools: bool = Field(
+        default=False,
+        description="Indicates if tools need to produce mock output")
+    show_thoughts: bool = Field(
+        default=True,
+        description="Show model's thoughts")
 
     def get_bigquery_data_project(self) -> str:
         return self.CLOUD_BIGQUERY_DATA_PROJECT or self.CLOUD_PROJECT
