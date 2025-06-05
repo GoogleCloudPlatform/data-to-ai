@@ -35,10 +35,13 @@ AUTONOMOUS_INSTRUCTIONS = """
 """
 
 INSTRUCTION = """
+<<<<<<< HEAD
 If you are asked to introduce yourself, respond that you are a Bus Maintenance 
 Scheduling Agent which uses Gemini-analyzed bus stop images to determine the 
 severity of the problem and to prioritize the scheduling.
 
+=======
+>>>>>>> origin/main
 Analyze the list of currently open bus stop incidents and find out the best time
 to send the maintenance crew to address the safety of cleanliness of a bus stop.
 
