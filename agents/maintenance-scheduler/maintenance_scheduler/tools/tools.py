@@ -52,8 +52,9 @@ def get_unresolved_incidents() -> List[BusStopIncident]:
       """
 
     logger.info("Getting the list of incidents")
+    incidents = []
     if config.mock_tools:
-        return [
+        incidents.append(
             BusStopIncident(
                 status="open",
                 bus_stop=BusStop(
@@ -61,7 +62,8 @@ def get_unresolved_incidents() -> List[BusStopIncident]:
                     address=USAddress(street="123 Main", city="New York",
                                       state="NY", zip="10001")),
                 source_image_uri=f"https://storage.mtls.cloud.google.com/{config.CLOUD_PROJECT}-multimodal/sources/MA-02-broken-glass.jpg",
-                source_image_mime_type="image/jpeg"),
+                source_image_mime_type="image/jpeg"))
+        incidents.append(
             BusStopIncident(
                 status="open",
                 bus_stop=BusStop(
@@ -70,42 +72,52 @@ def get_unresolved_incidents() -> List[BusStopIncident]:
                         street="457 1st Street", city="New York", state="NY",
                         zip="10002")),
                 source_image_uri="https://storage.mtls.cloud.google.com/{config.CLOUD_PROJECT}-multimodal/sources/MC-02-dirty-damaged.jpg",
-                source_image_mime_type="image/jpeg")
-        ]
-    rows = bigquery_client.query_and_wait(
-        project=config.get_bigquery_run_project(),
-        query=f"""
-        SELECT incidents.incident_id, incidents.bus_stop_id, incidents.status,
-            reports.uri as source_image_uri, reports.content_type as source_image_mime_type,
-            reports.description, bus_stops.address
-        FROM `{config.get_bigquery_data_project()}.bus_stop_image_processing.incidents` incidents
-        JOIN `{config.get_bigquery_data_project()}.bus_stop_image_processing.image_reports` reports
-            ON incidents.open_report_id = reports.report_id
-        JOIN `{config.get_bigquery_data_project()}.bus_stop_image_processing.bus_stops` bus_stops
-            ON incidents.bus_stop_id = bus_stops.bus_stop_id
-        WHERE incidents.status = 'OPEN' 
-    """
-    )
-
-    result = []
-    for row in rows:
-        result.append(BusStopIncident(
-            status=row.status.lower(),
-            source_image_uri=row.source_image_uri.replace("gs://", "https://storage.mtls.cloud.google.com/"),
-            source_image_mime_type=row.source_image_mime_type,
-            description=row.description,
-            bus_stop=BusStop(
-                id=row.bus_stop_id,
-                address=USAddress(
-                    street=row.address['street'],
-                    city=row.address['city'],
-                    state=row.address['state'],
-                    zip=row.address['zip'])
+                source_image_mime_type="image/jpeg"))
+    else:
+        try:
+            rows = bigquery_client.query_and_wait(
+                project=config.get_bigquery_run_project(),
+                query=f"""
+                SELECT incidents.incident_id, incidents.bus_stop_id, incidents.status,
+                    reports.uri as source_image_uri, reports.content_type as source_image_mime_type,
+                    reports.description, bus_stops.address
+                FROM `{config.get_bigquery_data_project()}.bus_stop_image_processing.incidents` incidents
+                JOIN `{config.get_bigquery_data_project()}.bus_stop_image_processing.image_reports` reports
+                    ON incidents.open_report_id = reports.report_id
+                JOIN `{config.get_bigquery_data_project()}.bus_stop_image_processing.bus_stops` bus_stops
+                    ON incidents.bus_stop_id = bus_stops.bus_stop_id
+                WHERE incidents.status = 'OPEN' 
+            """
             )
-        ))
 
-    logger.info("Retrieved incidents: %s", result)
-    return result
+            for row in rows:
+                incidents.append(BusStopIncident(
+                    status=row.status.lower(),
+                    incident_image_url=row.source_image_uri.replace("gs://",
+                                                                  "https://storage.mtls.cloud.google.com/"),
+                    incident_image_mime_type=row.source_image_mime_type,
+                    description=row.description,
+                    bus_stop=BusStop(
+                        id=row.bus_stop_id,
+                        address=USAddress(
+                            street=row.address['street'],
+                            city=row.address['city'],
+                            state=row.address['state'],
+                            zip=row.address['zip'])
+                    )
+                ))
+        except Exception as ex:
+            logger.error("Call to retrieve incidents failed: %s", str(ex))
+            return {
+                "status": "error",
+                "error_details": str(ex)
+            }
+
+    logger.info("Retrieved incidents: %s", incidents)
+    return {
+        "status": "success",
+        "bus_stop_incidents": incidents
+    }
 
 
 def get_expected_number_of_passengers(bus_stop_ids: list) -> dict:
@@ -132,8 +144,14 @@ def get_expected_number_of_passengers(bus_stop_ids: list) -> dict:
       """
     logger.info("Retrieving expected number of passengers for %s", bus_stop_ids)
 
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ArrayQueryParameter('bus_stop_ids', "STRING", bus_stop_ids)
+        ]
+    )
+
+    all_bus_stop_forecasts = {}
     if config.mock_tools:
-        result = {}
         for bus_stop_id in bus_stop_ids:
             forecast = []
             base_number_of_passengers = random.randint(5, 20)
@@ -143,52 +161,56 @@ def get_expected_number_of_passengers(bus_stop_ids: list) -> dict:
                     minutes=next_increment)
                 ).isoformat(), 'number_of_passengers': (
                     base_number_of_passengers + random.randint(3, 10))})
-            result[bus_stop_id] = forecast
-        return result
+            all_bus_stop_forecasts[bus_stop_id] = forecast
+    else:
+        try:
+            rows = bigquery_client.query_and_wait(
+                job_config=job_config,
+                project=config.get_bigquery_run_project(),
+                query=f"""
+                WITH forecast AS (
+                    SELECT
+                      bus_stop_id, forecast_timestamp, 
+                      CAST(forecast_value AS INT64) as expected_number_of_passengers
+                    FROM
+                      AI.FORECAST(
+                        (SELECT bus_stop_id, event_ts, num_riders
+                          FROM `{config.get_bigquery_data_project()}.bus_stop_image_processing.bus_ridership`
+                          WHERE bus_stop_id IN UNNEST(@bus_stop_ids)),
+                        data_col => 'num_riders',
+                        timestamp_col => 'event_ts',
+                        model => 'TimesFM 2.0',
+                        id_cols => ['bus_stop_id'],
+                        horizon => 500,
+                        confidence_level => .8)
+                )
+                SELECT bus_stop_id, forecast_timestamp, expected_number_of_passengers 
+                    FROM forecast WHERE forecast_timestamp > CURRENT_TIMESTAMP()"""
+            )
 
-    job_config = bigquery.QueryJobConfig(
-        query_parameters=[
-            bigquery.ArrayQueryParameter('bus_stop_ids', "STRING", bus_stop_ids)
-        ]
-    )
+            for row in rows:
+                bus_stop_id = row.bus_stop_id
+                forecast = all_bus_stop_forecasts[bus_stop_id] \
+                    if bus_stop_id in all_bus_stop_forecasts else []
+                forecast.append(
+                    {'time': row.forecast_timestamp
+                    .replace(tzinfo=ZoneInfo('UTC')).astimezone(time_zone)
+                    .strftime("%m/%d/%Y %H:%M"),
+                     'number_of_passengers': row.expected_number_of_passengers
+                     })
+                all_bus_stop_forecasts[bus_stop_id] = forecast
 
-    rows = bigquery_client.query_and_wait(
-        job_config=job_config,
-        project=config.get_bigquery_run_project(),
-        query=f"""
-        WITH forecast AS (
-            SELECT
-              bus_stop_id, forecast_timestamp, 
-              CAST(forecast_value AS INT64) as expected_number_of_passengers
-            FROM
-              AI.FORECAST(
-                (SELECT bus_stop_id, event_ts, num_riders
-                  FROM `{config.get_bigquery_data_project()}.bus_stop_image_processing.bus_ridership`
-                  WHERE bus_stop_id IN UNNEST(@bus_stop_ids)),
-                data_col => 'num_riders',
-                timestamp_col => 'event_ts',
-                model => 'TimesFM 2.0',
-                id_cols => ['bus_stop_id'],
-                horizon => 500,
-                confidence_level => .8)
-        )
-        SELECT bus_stop_id, forecast_timestamp, expected_number_of_passengers 
-            FROM forecast WHERE forecast_timestamp > CURRENT_TIMESTAMP()"""
-    )
+        except Exception as ex:
+            logger.error("Call to retrieve bus stop ridership failed: %s", str(ex))
+            return {
+                "status": "error",
+                "error_details": str(ex)
+            }
 
-    result = {}
-    for row in rows:
-        bus_stop_id = row.bus_stop_id
-        forecast = result[bus_stop_id] if bus_stop_id in result else []
-        forecast.append(
-            {'time': row.forecast_timestamp
-            .replace(tzinfo=ZoneInfo('UTC')).astimezone(time_zone)
-            .strftime("%m/%d/%Y %H:%M"),
-             'number_of_passengers': row.expected_number_of_passengers
-             })
-        result[bus_stop_id] = forecast
-
-    return result
+    return {
+        "status": "success",
+        "forecast": all_bus_stop_forecasts
+    }
 
 
 def schedule_maintenance(
@@ -197,7 +219,7 @@ def schedule_maintenance(
     reason: str,
     notification_subject: str,
     notification_content: str
-) -> str:
+) -> dict:
     """
       Schedule a bus stop maintenance
 
@@ -210,7 +232,7 @@ def schedule_maintenance(
 
 
       Returns:
-        outcome of the scheduling. Can be "success", "failure", or "review"
+        status of the scheduling.
 
       Example:
           >>> schedule_maintenance('stop-1', "April 2, 2025, at 3:00 PM EST", "Broken glass is a safety concern and needs to be cleaned right away.", "Bus stop stop-1 maintenance required", "Notification content")
@@ -235,21 +257,29 @@ def schedule_maintenance(
                                               notification_content),
             ]
         )
-        bigquery_client.query_and_wait(
-            project=config.get_bigquery_run_project(),
-            query=f"""
-        UPDATE `{config.get_bigquery_data_project()}.bus_stop_image_processing.incidents`
-        SET status = 'SCHEDULED', 
-            maintenance_details = STRUCT(
-            @maintenance_start as scheduled_time, 
-            @reason as reason, 
-            @notification_subject as notification_subject, 
-            @notification_content as notification_body)
-        WHERE status = 'OPEN' and bus_stop_id = @bus_stop_id
-    """, job_config=job_config
-        )
+        try:
+            bigquery_client.query_and_wait(
+                project=config.get_bigquery_run_project(),
+                job_config=job_config,
+                query=f"""
+                UPDATE `{config.get_bigquery_data_project()}.bus_stop_image_processing.incidents`
+                SET status = 'SCHEDULED', 
+                    maintenance_details = STRUCT(
+                    @maintenance_start as scheduled_time, 
+                    @reason as reason, 
+                    @notification_subject as notification_subject, 
+                    @notification_content as notification_body)
+                WHERE status = 'OPEN' and bus_stop_id = @bus_stop_id
+                """
+            )
+        except Exception as ex:
+            logger.error("Call to update incidents failed: %s", str(ex))
+            return {
+                "status": "error",
+                "error_details": str(ex)
+            }
 
-    return "success"
+    return {"status": "success"}
 
 
 def get_current_time() -> str:

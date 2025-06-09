@@ -43,7 +43,7 @@ class BusStopIncident(BaseModel):
     """
 
     bus_stop: BusStop = Field(description="Bus stop")
-    source_image_uri: str = Field(description="Image URI")
-    source_image_mime_type: str = Field(description="Image mime")
+    incident_image_url: str = Field(description="Image URL")
+    incident_image_mime_type: str = Field(description="Image mime")
     status: str = Field(description="Status of the incident")
     description: str = Field(description="Description of the bus stop")

@@ -36,6 +36,6 @@ session = remote_app.create_session(user_id=user_id)
 for event in remote_app.stream_query(
     user_id=user_id,
     session_id=session["id"],
-    message="Check if there is any bus stop maintenance needed",
+    message="Check if there are bus stops which need maintenance",
 ):
     pprint.pp(event)

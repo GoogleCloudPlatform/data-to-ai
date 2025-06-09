@@ -1,8 +1,8 @@
-[tool.poetry]
+[project]
 name = "maintenance_scheduler"
 version = "0.1.0"
 description = "Bus stop maintenance scheduler"
-authors = ["Sergei Lilichenko <slilichenko@google.com>"]
+authors = [{ name = "Sergei Lilichenko", email = "slilichenko@google.com" }]
 license = "Apache License 2.0"
 readme = "README.md"
 
@@ -12,8 +12,8 @@ pydantic-settings = "^2.8.1"
 tabulate = "^0.9.0"
 cloudpickle = "^3.1.1"
 pylint = "^3.3.6"
-google-cloud-aiplatform = {extras = ["adk","agent_engine"], version = "^1.95.0"}
-google-adk = "^1.1.1"
+google-cloud-aiplatform = { extras = ["adk", "agent_engine"], version = "^1.95.0" }
+google-adk = "^1.2.1"
 tzdata = "^2025.2"
 
 [tool.poetry.group.dev.dependencies]
@@ -26,7 +26,7 @@ pytest-asyncio = "^0.25.3"
 flake8-pyproject = "^1.2.3"
 pylint = "^3.3.6"
 pyink = "^24.10.1"
-google-cloud-aiplatform = {extras = ["evaluation"], version = "^1.88.0"}
+google-cloud-aiplatform = { extras = ["evaluation"], version = "^1.88.0" }
 
 
 [tool.pytest.ini_options]
@@ -37,11 +37,11 @@ testpaths = ["tests/", "eval/"]
 markers = [
     "unit"
 ]
-log_level="ERROR"
-log_cli=false
-log_auto_indent=true
-log_cli_date_format="%Y-%m-%d %H:%M:%S"
-log_cli_format ="[%(asctime)s] %(levelname)s (%(funcName)s) \t [%(pathname)s:%(lineno)d] %(message)s"
+log_level = "ERROR"
+log_cli = false
+log_auto_indent = true
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+log_cli_format = "[%(asctime)s] %(levelname)s (%(funcName)s) \t [%(pathname)s:%(lineno)d] %(message)s"
 filterwarnings = [
     "ignore::UserWarning",
 ]
@@ -53,6 +53,6 @@ build-backend = "poetry.core.mason"
 
 
 [tool.pyink]
-line-length=80
-pyink-indentation=4
+line-length = 80
+pyink-indentation = 4
 pyink-use-majority-quotes = true
