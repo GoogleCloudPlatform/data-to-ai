@@ -2,27 +2,30 @@
 
 ## Overview
 
-This project implements an AI-powered bus stop maintenance scheduling agent. 
+This project implements an AI-powered bus stop maintenance scheduling agent (the agent). 
 
 ## Agent Details
 
-The key features of the scheduling agent include integration with BigQuery and advanced reasoning
-capabilities prioritizing scheduling of one bus stop over the other.
+The agent's main task is to analyze open bus stop incidents, prioritize repairs, and dispatch maintenance crews. 
+This is achieved through the following key features:
+* **Rule-based Scheduling:** Bus stop selection can be prioritized using rules defined in natural language.
+* **Flexible Operations:** The agent can operate in both interactive and autonomous modes.
+* **Advanced AI Integration:** The agent combines BigQuery's time-series forecasting with the reasoning capabilities of the latest Gemini models.
+* **Multi-Agent Collaboration:** Multiple agents are utilized to accomplish specific tasks.
 
 ### Agent Architecture
 
 ![Scheduling Agent Workflow](./agent-workflow.svg)
 
-
-### Key Features
-
-[//]: # (TODO: add descriptions)
-
 #### Tools
 
 The agent has access to the following tools:
-
-[//]: # (TODO: add tool descriptions)
+* **Get Unresolved Incidents:** Retrieves the list of incidents and bus stop data from BigQuery
+* **Get Expected Number of Passengers:** Gets the time-series forecast of the bus ridership using BigQuery's TimesFM forecasting model
+* **Get Current Time:** Returns the current time which will be used to schedule maintenance in the future
+* **Is Time on Weekend:** Used by agent to schedule non-urgent maintenance during business hours.
+* **Generate Email:** Uses a separate agent to generate well formatted email which will be sent to the maintenance crew
+* **Schedule Maintenance:** Simulates the scheduling by updating the status of an incident with the "SCHEDULED" status and the notification details
 
 ## Setup and Installations
 
@@ -35,24 +38,17 @@ The agent has access to the following tools:
 
 ### Installation
 1.  **Prerequisites:**
+    Run the Terraform scripts described in the [Getting Started with the Terraform](https://github.com/GoogleCloudPlatform/data-to-ai/tree/maintenance-scheduler-agent?tab=readme-ov-file#getting-started-with-the-terraform) section of the top level README file.
 
-    For the Agent Engine deployment steps, you will need
-    a Google Cloud Project. Once you have created your project,
-    [install the Google Cloud SDK](https://cloud.google.com/sdk/docs/install).
-    Then run the following command to authenticate with your project:
-    ```bash
-    gcloud auth login
-    ```
-    You also need to enable certain APIs. Run the following command to enable
-    the required APIs:
-    ```bash
-    gcloud services enable aiplatform.googleapis.com
-    ```
+    Make sure to run the scripts that process the test data, e.g. run at least one `upload-batch.sh`
+    invocation and make sure that both `process_images` and `update_incidents` stored procedures
+    have been run. At the end of this process you will have several records in the `incidents` table
+    with the status "OPEN". This is the starting point for the agent to start scheduling
+    maintenance.
 
-1.  Clone the repository:
+1.  Switch to the agent's directory
 
     ```bash
-    git clone https://github.com/GoogleCloudPlatform/data-to-ai.git
     cd agents/maintenance-scheduler
     ```
 
@@ -72,11 +68,8 @@ The agent has access to the following tools:
   poetry env activate
   ```
 
-3.  Set up Google Cloud credentials:
-
-    - Ensure you have a Google Cloud project.
-    - Make sure you have the Vertex AI API enabled in your project.
-    - Set the `GOOGLE_GENAI_USE_VERTEXAI`, `GOOGLE_CLOUD_PROJECT`, and `GOOGLE_CLOUD_LOCATION` environment variables. You can set them in your `.env` file (modify and rename .env_sample file to .env) or directly in your shell. Alternatively you can edit [customer_service/config.py](maintenance_scheduler/config.py)
+3.  Set up environment variables that will be used by the local version of ADK
+    - Set the `GOOGLE_GENAI_USE_VERTEXAI`, `GOOGLE_CLOUD_PROJECT`, and `GOOGLE_CLOUD_LOCATION` environment variables. You can set them in your `.env` file (modify and rename .env_sample file to .env) or directly in your shell.
 
     ```bash
     export GOOGLE_CLOUD_PROJECT=YOUR_PROJECT_ID_HERE
@@ -86,8 +79,7 @@ The agent has access to the following tools:
 
 ## Running the Agent
 
-You can run the agent using the ADK commant in your terminal.
-from the root project directory:
+You can run the agent using the ADK command in your terminal.
 
 1.  Run agent in CLI:
 
@@ -151,7 +143,10 @@ from the root project directory:
 
 ## Configuration
 
-You can find further configuration parameters in [maintenance_scheduler/config.py](maintenance_scheduler/config.py). This includes parameters such as agent name, app name and LLM model used by the agent.
+You can find further configuration parameters
+in [maintenance_scheduler/config.py](maintenance_scheduler/config.py). This includes parameters such
+as agent name, app name and LLM model used by the agent. Most of the parameters can be configured by
+overriding the default values in the `.env` file.
 
 ## Deployment to Google Agent Engine
 
@@ -163,7 +158,7 @@ In order to inherit all dependencies of your agent you can build the wheel file 
     poetry build --format=wheel --output=deployment
     ```
 
-2. **Deploy the agent to agents engine**
+2. **Deploy the agent to Agent Engine**
     It is important to run deploy.py from withing deployment folder so paths are correct
 
     ```bash
@@ -174,7 +169,7 @@ In order to inherit all dependencies of your agent you can build the wheel file 
 3. **Capture the deployed agent's resource name
     If the deployment successful, the script will print a line similar to this:
     ```shell
-    INFO:root:Agent deployed successfully under resource name: projects/443345511836/locations/us-central1/reasoningEngines/1008428084531036160
+    INFO:root:Agent deployed successfully under resource name: projects/<project_number>/locations/us-central1/reasoningEngines/<numeric_id>
     ```
     Capture the resource name and update `GOOGLE_AGENT_RESOURCE_NAME` variable in the `.env` file.
 
@@ -230,7 +225,7 @@ In order to inherit all dependencies of your agent you can build the wheel file 
    ```
 ## Deployment to Agentspace
 
-One the Agent Engine deployment is successful, the agent can be enabled on an Agentspace app.
+Once the Agent Engine deployment is successful, the agent can be enabled on an Agentspace app.
 Agentspace will be the UI of the agent.
 
 ### Create a new Agentspace instance

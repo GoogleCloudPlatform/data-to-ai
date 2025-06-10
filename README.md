@@ -12,24 +12,41 @@ This repository implements a fully functional demo showcasing BigQuery's advance
 * Full text search on the automatically generated description of the images
 * Vector search for images with similar attributes
 * See the [ObjectRef branch](https://github.com/GoogleCloudPlatform/data-to-ai/tree/objectref) for how to utilize the BigQuery ObjectRef feature
-* ADK based agent which can schedule bus stop maintenance based on the rules defined in a natural language using BigQuery data
+* An ADK based agent which can schedule bus stop maintenance based on the rules defined in a natural language using BigQuery data
 
 ## Use Cases
 
-Imagine that a major metropolitan transportation agency seeks to enhance passenger satisfaction. The agency aims to receive alerts regarding cleanliness and safety concerns at bus stops. To achieve this, the city plans to equip its bus fleet with inexpensive outdoor-facing cameras that automatically upload images of bus stops to a cloud platform for automated issue detection. Additionally, the city will offer a customer portal, enabling passengers to upload bus stop images.
+Imagine that a major metropolitan transportation agency seeks to enhance passenger satisfaction. The
+agency aims to receive alerts regarding cleanliness and safety concerns at bus stops. To achieve
+this, the city plans to equip its bus fleet with inexpensive outdoor-facing cameras that
+automatically upload images of bus stops to a cloud platform for automated issue detection.
+Additionally, the city will offer a customer portal, enabling passengers to upload bus stop images.
 
-Images of bus stops should be automatically analyzed. If a bus stop is found to be dirty, an incident will be automatically created. The incident will be considered resolved once a new image shows the bus stop to be in an acceptable condition..
+Images of bus stops should be automatically analyzed. If a bus stop is found to be dirty, an
+incident will be automatically created. The incident will be considered resolved once a new image
+shows the bus stop to be in an acceptable condition..
 
-The transportation agency's internal users require the ability to search and monitor physical assets. We will leverage GenAI capabilities to facilitate semantic search over images, empowering system users to discover necessary information using natural language.
+The transportation agency's internal users require the ability to search and monitor physical
+assets. We will leverage GenAI capabilities to facilitate semantic search over images, empowering
+system users to discover necessary information using natural language.
 
-For our second use case, we will prepare the dataset for comprehensive searching and analysis. Our commercial team at the transportation agency requires confirmation that advertisements purchased by our clients are indeed being displayed, and that the associated bus stops are adequately maintained.
+For our second use case, we will prepare the dataset for comprehensive searching and analysis. Our
+commercial team at the transportation agency requires confirmation that advertisements purchased by
+our clients are indeed being displayed, and that the associated bus stops are adequately maintained.
 
-To achieve this, we will incorporate both human-readable and machine-processable information into our dataset. This will significantly facilitate the ability to answer inquiries such as: "Which bus stops feature advertisement 'X'?" or "What is the viewership count for these advertisements?" Furthermore, we will be able to generate reports on the condition of the bus stops.
+To achieve this, we will incorporate both human-readable and machine-processable information into
+our dataset. This will significantly facilitate the ability to answer inquiries such as: "Which bus
+stops feature advertisement 'X'?" or "What is the viewership count for these advertisements?"
+Furthermore, we will be able to generate reports on the condition of the bus stops.
 
-For our third use case, we aim to generate estimations of passenger numbers at bus stops. This will allow us to better prepare for large spikes in ridership or save costs during predicted periods of lower passenger numbers. We will leverage our input data to project expected rider numbers, incorporating weather data to estimate how passenger volume may fluctuate based on weather predictions.
+For our third use case, we aim to generate estimations of passenger numbers at bus stops. This will
+allow us to better prepare for large spikes in ridership or save costs during predicted periods of
+lower passenger numbers. We will leverage our input data to project expected rider numbers,
+incorporating weather data to estimate how passenger volume may fluctuate based on weather
+predictions.
 
-The fourth use case focuses on addressing the bus stop incidents. The incident reports and ridership forecasts will be used by an agent to prioritize the maintenance crew scheduling.
-
+The fourth use case focuses on addressing the bus stop incidents. The incident reports and ridership
+forecasts will be used by an agent to prioritize the maintenance crew scheduling.
 
 ![Incident Detection & Resolution in action](https://services.google.com/fh/files/misc/bus-stops-reel.gif)
 
