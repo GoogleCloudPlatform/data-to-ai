@@ -109,8 +109,7 @@ def get_unresolved_incidents() -> List[BusStopIncident]:
         except Exception as ex:
             logger.error("Call to retrieve incidents failed: %s", str(ex))
             return {
-                "status": "error",
-                "error_details": str(ex)
+                "status": "error"
             }
 
     logger.info("Retrieved incidents: %s", incidents)
@@ -203,8 +202,7 @@ def get_expected_number_of_passengers(bus_stop_ids: list) -> dict:
         except Exception as ex:
             logger.error("Call to retrieve bus stop ridership failed: %s", str(ex))
             return {
-                "status": "error",
-                "error_details": str(ex)
+                "status": "error"
             }
 
     return {
@@ -275,8 +273,7 @@ def schedule_maintenance(
         except Exception as ex:
             logger.error("Call to update incidents failed: %s", str(ex))
             return {
-                "status": "error",
-                "error_details": str(ex)
+                "status": "error"
             }
 
     return {"status": "success"}
