@@ -134,20 +134,20 @@ project:
 
 * `<project-id>_-bus-stop-images` Cloud Storage bucket
 * `bus_stop_image_processing` BigQuery dataset containing:
-  * `images` object table, pointing to the Cloud Storage bucket
-  * `image_reports` table, containing the results of the image analysis
-  * `incidents` table, containing the automatically detected bus stops requiring attention
-  * `bus_stops` table describing fictitious bus stops used in this demo
-  * `bus_ridership` table, containing synthetic data
-  * `text_embeddings` table with text embeddings of the textual descriptions of the images
-  * `multimodal_embeddings` table with multimodal embeddings of the images themselves
-  * several tables with `_watermark` at the name suffix, which are used to track processing state
-  * `process_images` stored procedure
-  * `update_incidents` stored procedure
-  * `semantic_search_text_embeddings` table valued function returning vector search results from text embeddings base table
-  * `semantic_search_multimodal_embeddings` table valued function returning vector search results from image embeddings base table
-  * `default_model`, `pro_model`, `multimodal_embedding_model` and `text_embedding_model`, which
-    refer to different Vertex AI foundational models
+    * `images` object table, pointing to the Cloud Storage bucket
+    * `image_reports` table, containing the results of the image analysis
+    * `incidents` table, containing the automatically detected bus stops requiring attention
+    * `bus_stops` table describing fictitious bus stops used in this demo
+    * `bus_ridership` table, containing synthetic data
+    * `text_embeddings` table with text embeddings of the textual descriptions of the images
+    * `multimodal_embeddings` table with multimodal embeddings of the images themselves
+    * several tables with `_watermark` at the name suffix, which are used to track processing state
+    * `process_images` stored procedure
+    * `update_incidents` stored procedure
+    * `semantic_search_text_embeddings` table valued function returning vector search results from text embeddings base table
+    * `semantic_search_multimodal_embeddings` table valued function returning vector search results from image embeddings base table
+    * `default_model`, `pro_model`, `multimodal_embedding_model` and `text_embedding_model`, which
+      refer to different Vertex AI foundational models
 * `image-processing-invoker` Cloud Run function to run both `process_images` and `update_incidents`
   stored procedures
 * `run_bus_stop_image_processing` Cloud Schedule to run the invoker function
@@ -166,7 +166,7 @@ attribute.
 
 [`update_incidents`](/infrastructure/terraform/bigquery-routines/update-incidents-procedure.sql.tftpl)
 looks for newly processed images and creates new records in `incidents` tables in case the bus stop
-cleanliness level is low and there is no active incident. If the bus stop appears clean, it updates
+the cleanliness level is low and there is no active incident. If the bus stop appears clean, it updates
 the current incident to automatically "close" it.
 
 You can run each procedure independent of each other.
@@ -181,12 +181,12 @@ By default, the schedule is disabled. To process new images automatically, navig
 to [Cloud Scheduler](https://console.cloud.google.com/cloudscheduler).
 in Google Cloud Console and enable `run_bus_stop_image_processing` schedule.
 
-Notice, that if you re-run `terraform apply` it will disable the schedule again. You can permanently
+Notice that if you re-run `terraform apply` it will disable the schedule again. You can permanently
 enable the scheduler by changing the Terraform variable `pause_scheduler` to `false`.
 
 ### Uploading test files
 
-`process_images` procedure looks for the files in the `images` "folder" of the bucket. A shell
+`process_images` procedure looks for the files in the `images` folder" of the bucket. A shell
 script [`copy-image.sh`](/copy-image.sh) in the root directory can be used to copy images to that
 folder. The script takes three parameters - source file (must be a JPEG image), destination object
 name and the id of the bus stop. You can try to take a picture of a bus stop yourself and upload it
@@ -209,7 +209,7 @@ cleanliness. Run:
 to simulate transmission of bus stop images from several buses.
 
 You can run `process_images` manually after you uploaded images, or you can let the automated
-processing take care of this. You can the see the progress by examining the contents of `reports` table.
+processing take care of this. You can see the progress by examining the contents of the `reports` table.
 If you run `update_incidents`, the `incidents` table should also be updated if there are bus stops
 which need attention.
 
@@ -226,7 +226,7 @@ and allow complex filtering and aggregation.
 As the number of use cases grows, the prompt that extracts the attributes can be adjusted to extract
 additional attributes to be stored in the `reports` table.
 
-There could be a need ad-hoc analysis on the attributes which are not currently extracted.
+There could be a need for ad-hoc analysis on the attributes which are not currently extracted.
 The following sections offer different options on how this analysis can be done.
 
 ### Full text search
@@ -263,7 +263,7 @@ SELECT *
 ```
 
 The current implementation of the function is hardcoded to return top 10 closest matches (records
-from `reports` table).
+from the `reports` table).
 
 Table results also includes:
 - `distance` column, which should be used to gauge how semantically close the matches are.
@@ -292,7 +292,7 @@ Depending on the embedding model used, the vector embeddings will be mapped out 
 Therefore, the vector search results and their respective distances will be different depending on which semantic search function is used.
 
 The majority of the bus stop image embeddings are in close proximity to each other when the default multimodal
-embedding model is used. In that case, vector searches can return a number of images with very similar distance.
+embedding model is used. In that case, vector searches can return a number of images with very similar distances.
 
 ### Hybrid search
 
@@ -303,7 +303,7 @@ There are different approaches depending on what type of search you're looking t
 
 You can search and combine results from different models and vector spaces, in our case the text embeddings and multimodal embeddings. This approach is typically used when combining semantic search results (using dense embeddings) with keyword-based search results (using sparse embeddings generated by a vectorizer like [TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf) or [BM25](https://en.wikipedia.org/wiki/Okapi_BM25)).
 
-For our purposes, we'll just combine the search results from the two deployed embedding models used `text_embedding_model` and `multimodal_embedding_model`, but the same approach applies with other pre-trained or custom embedding models.
+For our purposes, we'll just combine the search results from the two deployed embedding models using `text_embedding_model` and `multimodal_embedding_model`, but the same approach applies with other pre-trained or custom embedding models.
 
 To that end, the [Reciprocal Rank Fusion (RRF)](https://cloud.google.com/vertex-ai/docs/vector-search/about-hybrid-search#rrf) algorithm is commonly used to combine results from different ranking methods into a single, unified ranking. It works by giving higher scores to results that appear near the top of multiple result sets.
 
@@ -336,7 +336,7 @@ FROM ranked_results_multimodal_embeddings r1
 ORDER BY rrf_score DESC;  
 ```
 
-The query joins the two results sets based on image `uri`. It then calculates the reciprocal rank for each image in each result set, then calculates final RRF score by taking a weighted average of the scores. The weights are set to 0.5 for each result set, but that can be adjusted using the `rrf_ranking_alpha` variable based on which retrieval system you want to prioritize. The search terms used for each type of search can also be improved based on testing using a realistic set of images.
+The query joins the two results sets based on image `uri`. It then calculates the reciprocal rank for each image in each result set, then calculates the final RRF score by taking a weighted average of the scores. The weights are set to 0.5 for each result set, but that can be adjusted using the `rrf_ranking_alpha` variable based on which retrieval system you want to prioritize. The search terms used for each type of search can also be improved based on testing using a realistic set of images.
 
 #### Approach 2: Enhancing vector search results with keyword matches
 
@@ -407,7 +407,7 @@ terraform -chdir infrastructure/terraform destroy
 
 Contributions to this library are always welcome and highly encouraged.
 
-See [CONTRIBUTING](CONTRIBUTING.md) for more information how to get started.
+See [CONTRIBUTING](CONTRIBUTING.md) for more information on how to get started.
 
 Please note that this project is released with a Contributor Code of Conduct. By participating in
 this project you agree to abide by its terms. See [Code of Conduct](CODE_OF_CONDUCT.md) for more
