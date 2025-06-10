@@ -1,9 +1,8 @@
-# Multimodal processing using LLMs, semantic search and advanced time-series forecasting using BigQuery
+# Multimodal processing using LLMs, semantic search, advanced time-series forecasting using BigQuery, Agent integration with BigQuery
 
-[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=GITHUB_URL)
+[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fdata-to-ai)
 
-This repo contains a fully functional demo to showcase how BigQuery can do complex processing of images
-using multimodal GenAI capabilities of Google Cloud.
+This repository implements a fully functional demo showcasing BigQuery's advanced image processing capabilities through Google Cloud's multimodal GenAI. It illustrates three distinct methods for time-series forecasting within BigQuery and demonstrates the implementation of a sophisticated Agent that leverages BigQuery data for decision-making.
 
 ## Features
 
@@ -12,26 +11,24 @@ using multimodal GenAI capabilities of Google Cloud.
 * Ability to extract complex image attributes without the need to train custom models
 * Full text search on the automatically generated description of the images
 * Vector search for images with similar attributes
-* See the [ObjectRef branch](https://github.com/GoogleCloudPlatform/data-to-ai/tree/objectref) for how to utilize the BigQuery ObjectRef feature.
+* See the [ObjectRef branch](https://github.com/GoogleCloudPlatform/data-to-ai/tree/objectref) for how to utilize the BigQuery ObjectRef feature
+* ADK based agent which can schedule bus stop maintenance based on the rules defined in a natural language using BigQuery data
 
 ## Use Cases
 
-Imagine a large city transportation agency which is trying to improve its passenger satisfaction. The
-agency would like to be notified if there are issues with cleanliness and safety of the
-bus stops. The city decides to install low cost outdoor facing cameras on its bus fleet and
-automatically uploads pictures of their bus stops to a cloud for automatic issue detection. The city
-also provides a customer portal to allow uploading bus stop pictures by passengers.
+Imagine that a major metropolitan transportation agency seeks to enhance passenger satisfaction. The agency aims to receive alerts regarding cleanliness and safety concerns at bus stops. To achieve this, the city plans to equip its bus fleet with inexpensive outdoor-facing cameras that automatically upload images of bus stops to a cloud platform for automated issue detection. Additionally, the city will offer a customer portal, enabling passengers to upload bus stop images.
 
-The images should be automatically analyzed and if the bus stop is found to be dirty - an incident
-is automatically created. The incident is considered to be resolved if a new image shows the bus stop
-to be in acceptable condition. 
+Images of bus stops should be automatically analyzed. If a bus stop is found to be dirty, an incident will be automatically created. The incident will be considered resolved once a new image shows the bus stop to be in an acceptable condition..
 
-The internal users of our transportation agency also needs to perform search and monitoring operations over the physical assets. We will use GenAI capabilities to enable semantic search over the images, helping the system users to discover the information they need using natural language.
+The transportation agency's internal users require the ability to search and monitor physical assets. We will leverage GenAI capabilities to facilitate semantic search over images, empowering system users to discover necessary information using natural language.
 
-In our second use case, we want to make our dataset ready for search and analysis. The transportation agency commercial department want to verify that ads being paid for by our commercial customers are being displayed and that the condition of those bus stops aren't in a pressing need for care. For that, we will enrich our dataset with human and machine friendly information to make it more usable for those queries, where we can find bus stops with specific ads, and understand how many people are standing in those bus stops (impressions of ads) and generate reports for the condition of those bus stops.
+For our second use case, we will prepare the dataset for comprehensive searching and analysis. Our commercial team at the transportation agency requires confirmation that advertisements purchased by our clients are indeed being displayed, and that the associated bus stops are adequately maintained.
 
-Our third use case, we are asked to generate estimations of number of passengers in our bus stops, in order to be better prepared for any large spikes or save costs when we predict lower number of passengers. We will use our input data to project estimations about expected number of riders, using weather data to estimate how number of passengers might change, given weather predictions. 
+To achieve this, we will incorporate both human-readable and machine-processable information into our dataset. This will significantly facilitate the ability to answer inquiries such as: "Which bus stops feature advertisement 'X'?" or "What is the viewership count for these advertisements?" Furthermore, we will be able to generate reports on the condition of the bus stops.
 
+For our third use case, we aim to generate estimations of passenger numbers at bus stops. This will allow us to better prepare for large spikes in ridership or save costs during predicted periods of lower passenger numbers. We will leverage our input data to project expected rider numbers, incorporating weather data to estimate how passenger volume may fluctuate based on weather predictions.
+
+The fourth use case focuses on addressing the bus stop incidents. The incident reports and ridership forecasts will be used by an agent to prioritize the maintenance crew scheduling.
 
 
 ![Incident Detection & Resolution in action](https://services.google.com/fh/files/misc/bus-stops-reel.gif)
@@ -50,7 +47,7 @@ The following is a high level architecture diagram of the solution:
 There are two implementations of the solution. One uses a Vertex AI Notebook to show the
 step-by-step implementation of the solution and uses a set of test images to illustrate the actual image
 processing. The other implementation is a set of Terraform scripts that automatically creates a
-fully functional deployment of the solution.
+fully functional deployment of the solution. The bus stop maintenance scheduling agent uses the dataset created by the Terraform scripts.
 
 Currently, the two implementations create two independent BigQuery datasets and Cloud Storage
 buckets. This is done to be able to run the implementations independently of each other.
@@ -62,8 +59,8 @@ By using the provided notebooks, you will create the following solution ![Archit
 The following notebooks are provided:
 
 1. [CleanSight (Part 1): Multimodal Analysis and Search of Bus Stops](./notebooks/part_1_multimodal_analysis_search.ipynb)
-This notebook showcases the power of multimodal Gemini models and BigQuery vector search for a real-world image analysis use case. This notebook is
-self-sufficient and can be run independently without needing any other components of this repository. 
+   This notebook showcases the power of multimodal Gemini models and BigQuery vector search for a real-world image analysis use case. This notebook is
+   self-sufficient and can be run independently without needing any other components of this repository.
 2. [CleanSight (Part 2): Large-scale multimodal understanding](./notebooks/part_2_large_scale_understanding.ipynb) This notebook is the second part of the CleanSight example application. Whereas Part 1 represents an operational system that ingests and processes bus stop images as they arrive, this notebook focuses on the large-scale AI capabilities available once a large number of images has been collected. This notebook relies on the resources created in the previous (part 1) notebook.
 3. [CleanSight (Part 3): Predictions of bus stop related events](./notebooks/part_3_time_series_forecasting.ipynb) This notebook is the third part of the CleanSight example application. In this notebook, we'll explore how advanced time-series predictions can be combined with data produced using multimodal analysis. __Note__ This notebook requires access to the `WeatherNext` dataset. See the notebook for more details.`
 
@@ -137,18 +134,20 @@ project:
 
 * `<project-id>_-bus-stop-images` Cloud Storage bucket
 * `bus_stop_image_processing` BigQuery dataset containing:
-    * `images` object table, pointing to the Cloud Storage bucket
-    * `image_reports` table, containing the results of the image analysis
-    * `incidents` table, containing the automatically detected bus stops requiring attention
-    * `text_embeddings` table with text embeddings of the textual descriptions of the images
-    * `multimodal_embeddings` table with multimodal embeddings of the images themselves
-    * several tables with `_watermark` at the name suffix, which are used to track processing state
-    * `process_images` stored procedure
-    * `update_incidents` stored procedure
-    * `semantic_search_text_embeddings` table valued function returning vector search results from text embeddings base table
-    * `semantic_search_multimodal_embeddings` table valued function returning vector search results from image embeddings base table
-    * `default_model`, `pro_model`, `multimodal_embedding_model` and `text_embedding_model`, which
-      refer to different Vertex AI foundational models
+  * `images` object table, pointing to the Cloud Storage bucket
+  * `image_reports` table, containing the results of the image analysis
+  * `incidents` table, containing the automatically detected bus stops requiring attention
+  * `bus_stops` table describing fictitious bus stops used in this demo
+  * `bus_ridership` table, containing synthetic data
+  * `text_embeddings` table with text embeddings of the textual descriptions of the images
+  * `multimodal_embeddings` table with multimodal embeddings of the images themselves
+  * several tables with `_watermark` at the name suffix, which are used to track processing state
+  * `process_images` stored procedure
+  * `update_incidents` stored procedure
+  * `semantic_search_text_embeddings` table valued function returning vector search results from text embeddings base table
+  * `semantic_search_multimodal_embeddings` table valued function returning vector search results from image embeddings base table
+  * `default_model`, `pro_model`, `multimodal_embedding_model` and `text_embedding_model`, which
+    refer to different Vertex AI foundational models
 * `image-processing-invoker` Cloud Run function to run both `process_images` and `update_incidents`
   stored procedures
 * `run_bus_stop_image_processing` Cloud Schedule to run the invoker function
@@ -158,11 +157,11 @@ project:
 There are two stored procedures which contain the logic of processing images.
 
 [`process_images`](/infrastructure/terraform/bigquery-routines/process-images.sql.tftpl) processes
-new images uploaded since the last time this procedure was run. It extracts several attributes 
-from the image (e.g., cleanliness level, number of people) and the generic image description 
-using a Vertex AI multimodal LLM. The result of processing is stored in the `image_reports` table. 
-The description's text embedding is generated using a Vertex AI's text embedding LLM and stored 
-in the `text_embeddings` table. The procedure expects all the files to contain "stop_id" metadata 
+new images uploaded since the last time this procedure was run. It extracts several attributes
+from the image (e.g., cleanliness level, number of people) and the generic image description
+using a Vertex AI multimodal LLM. The result of processing is stored in the `image_reports` table.
+The description's text embedding is generated using a Vertex AI's text embedding LLM and stored
+in the `text_embeddings` table. The procedure expects all the files to contain "stop_id" metadata
 attribute.
 
 [`update_incidents`](/infrastructure/terraform/bigquery-routines/update-incidents-procedure.sql.tftpl)
@@ -187,47 +186,47 @@ enable the scheduler by changing the Terraform variable `pause_scheduler` to `fa
 
 ### Uploading test files
 
-`process_images` procedure looks for the files in the `images` "folder" of the bucket. A shell 
-script [`copy-image.sh`](/copy-image.sh) in the root directory can be used to copy images to that 
-folder. The script takes three parameters - source file (must be a JPEG image), destination object 
-name and the id of the bus stop. You can try to take a picture of a bus stop yourself and upload it 
+`process_images` procedure looks for the files in the `images` "folder" of the bucket. A shell
+script [`copy-image.sh`](/copy-image.sh) in the root directory can be used to copy images to that
+folder. The script takes three parameters - source file (must be a JPEG image), destination object
+name and the id of the bus stop. You can try to take a picture of a bus stop yourself and upload it
 to the bucket to see how the Gemini model is able to analyze it.
 
 There is a test image file generated by Imagen 3 in the [data](data) directory. To simulate
-capturing an image of a dirty bus stop, run 
+capturing an image of a dirty bus stop, run
 
 ```shell
 ./copy-image.sh data/bus-stop-1-dirty.jpeg bus-stop-1-dirty.jpeg stop-1
 ```
 
-There are also several staged real and somewhat altered images of bus stops in various degrees of 
+There are also several staged real and somewhat altered images of bus stops in various degrees of
 cleanliness. Run:
 
 ```shell
 ./upload-batch.sh data/batch-1.txt 
 ```
 
-to simulate transmission of bus stop images from several buses. 
+to simulate transmission of bus stop images from several buses.
 
-You can run `process_images` manually after you uploaded images, or you can let the automated 
+You can run `process_images` manually after you uploaded images, or you can let the automated
 processing take care of this. You can the see the progress by examining the contents of `reports` table.
 If you run `update_incidents`, the `incidents` table should also be updated if there are bus stops
 which need attention.
 
 ## Searching and analyzing images
-There are multiple ways to search images using BigQuery's SQL. 
+There are multiple ways to search images using BigQuery's SQL.
 
 ### Using extracted attributes
 The primary purpose of extracting the attributes like `cleanliness_level` and `is_bus_stop` is to
 enable the downstream processing to use very simple and efficient queries to analyze the state of
-bus stops. Once extracted, you can easily answer questions like "what is the current number and 
+bus stops. Once extracted, you can easily answer questions like "what is the current number and
 percentage of stops which require attention" or create Looker dashboards to show historic trends
 and allow complex filtering and aggregation.
 
 As the number of use cases grows, the prompt that extracts the attributes can be adjusted to extract
 additional attributes to be stored in the `reports` table.
 
-There could be a need ad-hoc analysis on the attributes which are not currently extracted. 
+There could be a need ad-hoc analysis on the attributes which are not currently extracted.
 The following sections offer different options on how this analysis can be done.
 
 ### Full text search
@@ -267,7 +266,7 @@ The current implementation of the function is hardcoded to return top 10 closest
 from `reports` table).
 
 Table results also includes:
-- `distance` column, which should be used to gauge how semantically close the matches are. 
+- `distance` column, which should be used to gauge how semantically close the matches are.
 - `rank` column which is assigned to each result based on its distance. Closest images get lower ranks (1, 2, 3, etc.).
 
 ### Semantic search using multimodal embeddings
@@ -290,7 +289,7 @@ SELECT *
 Similar to `semantic_search_text_embeddings`, `semantic_search_multimodal_embeddings` includes `distance` and `rank` columns.
 
 Depending on the embedding model used, the vector embeddings will be mapped out differently in the vector space.
-Therefore, the vector search results and their respective distances will be different depending on which semantic search function is used. 
+Therefore, the vector search results and their respective distances will be different depending on which semantic search function is used.
 
 The majority of the bus stop image embeddings are in close proximity to each other when the default multimodal
 embedding model is used. In that case, vector searches can return a number of images with very similar distance.
@@ -382,17 +381,21 @@ Remember to adapt these approaches and the SQL code to your specific needs and d
 
 ### Analyzing the object table directly
 If none of the approaches above give good answers, the source object table can be analyzed using
-various prompts. 
+various prompts.
 
 This approach can be also used when upgrading to the new versions of various models used here. It is
-important that the responses produced by the new models will be correctly processed by the SQL 
-statements in the [`process_images`](/infrastructure/terraform/bigquery-routines/process-images.sql.tftpl) 
+important that the responses produced by the new models will be correctly processed by the SQL
+statements in the [`process_images`](/infrastructure/terraform/bigquery-routines/process-images.sql.tftpl)
 stored procedure.
 
 ### Note on using vector indexes
-This repo doesn't create [vector indexes](https://cloud.google.com/bigquery/docs/vector-index) automatically. 
-Vector indexes can be created only if the table to be indexed contains at least 5,000 records. 
-It's highly recommended to add the indexes in production environment to optimize vector search performance.
+This repo doesn't create [vector indexes](https://cloud.google.com/bigquery/docs/vector-index) automatically.
+Vector indexes can be created only if the table to be indexed contains at least 5,000 records.
+It's highly recommended to add the indexes in the production environment to optimize vector search performance.
+
+
+## Bus Maintenance Scheduling Agent
+To run the agent, please refer to the [README](agents/maintenance-scheduler/README.md) in the `agents/maintenance-scheduler` folder.
 
 ## Cleanup
 
@@ -413,3 +416,4 @@ information.
 ## License
 
 Apache 2.0 - See [LICENSE](LICENSE) for more information.
+
