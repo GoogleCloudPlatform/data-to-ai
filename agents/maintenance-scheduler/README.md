@@ -38,13 +38,17 @@ The agent has access to the following tools:
 
 ### Installation
 1.  **Prerequisites:**
-    Run the Terraform scripts described in the [Getting Started with the Terraform](https://github.com/GoogleCloudPlatform/data-to-ai/tree/maintenance-scheduler-agent?tab=readme-ov-file#getting-started-with-the-terraform) section of the top level README file.
+Run the Terraform scripts described in the [Getting Started with the Terraform](https://github.com/GoogleCloudPlatform/data-to-ai/tree/maintenance-scheduler-agent?tab=readme-ov-file#getting-started-with-the-terraform) section of the top level README file.
 
-    Make sure to run the scripts that process the test data, e.g. run at least one `upload-batch.sh`
-    invocation and make sure that both `process_images` and `update_incidents` stored procedures
-    have been run. At the end of this process you will have several records in the `incidents` table
-    with the status "OPEN". This is the starting point for the agent to start scheduling
-    maintenance.
+Make sure to run the scripts that process the test data, e.g. run at least one `upload-batch.sh`
+invocation and make sure that both `process_images` and `update_incidents` stored procedures
+have been run. At the end of this process you will have several records in the `incidents` table
+with the status "OPEN". 
+
+Additionally, execute the `generate_synthetic_ridership` stored procedure. The data generated in
+this step will be used to forecast the number of riders.
+
+This is the starting point for the agent to start scheduling maintenance.
 
 1.  Switch to the agent's directory
 

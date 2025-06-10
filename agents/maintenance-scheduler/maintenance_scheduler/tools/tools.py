@@ -185,7 +185,7 @@ def get_expected_number_of_passengers(bus_stop_ids: list) -> dict:
                         confidence_level => .8)
                 )
                 SELECT bus_stop_id, forecast_timestamp, expected_number_of_passengers 
-                    FROM forecast WHERE forecast_timestamp > CURRENT_TIMESTAMP()"""
+                    FROM forecast WHERE forecast_timestamp BETWEEN CURRENT_TIMESTAMP() AND TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 DAY) """
             )
 
             for row in rows:
