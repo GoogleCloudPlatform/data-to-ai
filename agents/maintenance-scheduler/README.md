@@ -97,7 +97,57 @@ You can run the agent using the ADK command in your terminal.
     ```
     Select the maintenance_scheduler from the dropdown
 
-[//]: # (### Example Interaction - TODO)
+3.  Interacting with the agent
+
+The primary purpose of the agent is to respond to a request like "Check if there are any bus stops which require maintenance."
+A typical response will be:
+> Here are the bus stops requiring maintenance and the description of each problem:
+
+> * Bus stop #4 at 529 Old World quail Avenue, Anytown, NY, 10001: "The bus stop appears to be moderately dirty. There are leaves scattered on the sidewalk and along the curb. The bench shows signs of wear and tear, with some paint peeling. There is no visible graffiti or damage that would indicate vandalism. The bus stop has a bench and a sign. There are no immediate safety concerns. The steps leading to the house appear to be in disrepair."
+
+> * Bus stop #17 at 6883 Platypus Street, Anytown, NY, 10001: "The bus stop shows signs of neglect. The bench is damaged, with significant wood missing from the seat and backrest. There is litter on the ground, including plastic bottles and a crumpled bag. The presence of litter and the damaged bench contribute to a low cleanliness score. There are no apparent safety hazards, such as broken glass or structural instability, so the safety level is high. The bus stop sign is intact and the trash can is present, but the overall condition of the stop is poor."
+
+> * Bus stop #5 at 4999 list Avenue, Anytown, NY, 10001: "The bus stop appears to have some cleanliness issues. The sidewalk has some leaves and debris. The trash can is open and appears to have some trash inside. The bench has some wear and tear, but does not appear to be damaged. The curb has some discoloration and debris. There is no visible graffiti or signs of vandalism. The bus stop is located on a sidewalk next to a building. The overall cleanliness is not great, but there are no immediate safety concerns."
+
+> * Bus stop #7 at 3643 Tasmanian devil Street, Anytown, NY, 10001: "The bus stop appears to be moderately dirty. There are leaves on the ground and some debris near the bench. The bench itself shows signs of wear and tear, but no immediate safety hazards are apparent. There is a trash can present, which suggests an effort to maintain cleanliness, but the presence of leaves and debris indicates that the area could benefit from cleaning. There is no visible graffiti or vandalism. The bus stop has a bench, a trash can, and a bus stop sign. The area appears safe."
+
+> * Bus stop #16 at 8972 Porpoise Lane, Anytown, NY, 10001: "The bus stop appears to be in need of cleaning. The bench has a damaged backrest with peeling paint and is covered in leaves. The ground also has leaves scattered across it. There is no visible litter or graffiti. The bus stop sign is intact. There are no immediate safety concerns. The area is well-lit, and there are no obvious hazards."
+
+> Would you like me to schedule the maintenance for any of these bus stops?
+
+You can ask the agent to proceed with the scheduling by simply replying "Yes". It will attempt to prioritize the bus stops based on the [agent instructions](maintenance_scheduler/prompts.py).
+Here's a typical response:
+
+> I have the expected passenger numbers for the bus stops.
+
+> Based on this data and the current time (Wednesday, June 11, 2025, 4:07 PM), I will determine the best time to schedule maintenance for each stop, prioritizing by passenger traffic and aiming for regular working hours.
+
+> Let's start with Bus stop #5 at 4999 list Avenue, Anytown, NY, 10001. It has the highest average passenger traffic. The issue is: "The bus stop appears to have some cleanliness issues. The sidewalk has some leaves and debris. The trash can is open and appears to have some trash inside. The bench has some wear and tear, but does not appear to be damaged. The curb has some discoloration and debris. There is no visible graffiti or signs of vandalism. The bus stop is located on a sidewalk next to a building. The overall cleanliness is not great, but there are no immediate safety concerns."
+
+> This seems like a general cleaning job. I'll look for a time with low passenger traffic during working hours.
+
+> Considering the passenger forecast, a good time to schedule this would be Thursday, June 12, 2025, at 9:00 AM EST when passenger numbers are very low. This will take approximately 3 hours.
+
+> Would you like me to schedule the maintenance for bus stop #5 at this time?
+
+Again, you can reply with "Yes". The agent will respond with something along the lines of:
+
+> Great. I've scheduled the maintenance for bus stop #5 at 4999 list Avenue for Thursday, June 12, 2025, at 9:00 AM EST.
+
+> Now let's move on to the next bus stop.
+
+> Bus stop #17 at 6883 Platypus Street, Anytown, NY, 10001 also has high passenger traffic.
+> 
+> ... rest of the agent response ...
+
+This process will continue until there are no more bus stops that require maintenance.
+
+The agent can respond to other prompts. You can experiment using these examples:
+* Describe yourself
+* What is the URL of the image of the bus stop #7?
+* Schedule the maintenance of bus stop 5 at a different time
+* Show the email notification generated for the bus stop 5
+
 
 [//]: # ()
 [//]: # (## Evaluating the Agent)
@@ -151,6 +201,8 @@ You can find further configuration parameters
 in [maintenance_scheduler/config.py](maintenance_scheduler/config.py). This includes parameters such
 as agent name, app name and LLM model used by the agent. Most of the parameters can be configured by
 overriding the default values in the `.env` file.
+
+[//]: # (TODO: explain how thoughts can be used and autonomous vs interactive configs)
 
 ## Deployment to Google Agent Engine
 
