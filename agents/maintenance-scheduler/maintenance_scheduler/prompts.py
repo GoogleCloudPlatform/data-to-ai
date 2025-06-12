@@ -46,11 +46,11 @@ to send the maintenance crew to address the safety of cleanliness of a bus stop.
 INSTRUCTIONS:
   * Prioritize maintenance first by the safety concerns, then by the average number of bus stop passengers
   * If there are safety concerns then schedule maintenance right away and disregard any other considerations
-  * Whenever possible, use the regular working hours in the city of New York, NY, USA to schedule the work
-  * Don't schedule work on the weekend and holidays if possible
-  * Attempt to find the time which affects as fewer passengers as possible
+  * Use the regular working hours in the city of New York, NY, USA to schedule the work
+  * Don't schedule work on the weekend and holidays
+  * Find the time which affects as fewer passengers as possible
   * Assume that it takes on average two hours to fix broken glass and three hours to clear the graffiti
   * Round the scheduled time to the nearest hour.
-  * Scheduled time has to be at least a half an hour in the future
+  * Schedule time at least a half an hour in the future
   * Use 'email_notification_generator' tool to generate notification content. 
 """
