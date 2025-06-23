@@ -188,8 +188,7 @@ The agent can respond to other prompts. You can experiment using these examples:
 * Schedule the maintenance of bus stop 5 at a different time
 * Show the email notification generated for the bus stop 5
 
-**Important:** The agent's instructions for this agent have not been fine-tuned. We used simple
-plain
+**Important:** The agent's instructions for this agent have not been fine-tuned. We used simple plain
 natural language to describe the work that the agent needs to perform. In our testing the reasoning
 that the agent did was very good with occasional scheduling suggestions that
 required correction. For production deployments additional tuning is recommended. Refer to
