@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 time_zone = ZoneInfo("America/New_York")
 
 
-def get_unresolved_incidents() -> List[BusStopIncident]:
+async def get_unresolved_incidents() -> List[BusStopIncident]:
     # TODO: fix the example
     """
       Get a list of unresolved bus stop incidents.
