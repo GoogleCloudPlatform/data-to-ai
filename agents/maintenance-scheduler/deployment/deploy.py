@@ -71,24 +71,20 @@ if args.delete:
         logging.error(f"Agent {args.resource_id} not found")
 
 else:
-    app = AdkApp(agent=root_agent, enable_tracing=False)
+    app = AdkApp(agent=root_agent, enable_tracing=True)
 
     logging.info("deploying agent to agent engine:")
     remote_app = agent_engines.create(
         app,
-        display_name="Bus Maintenance Scheduler",
-        description="Agent to assist with bus scheduling",
+        display_name="Bus Maintenance Scheduler v1.0",
+        description="Agent to assist with bus maintenance scheduling",
         requirements=[
             AGENT_WHL_FILE,
         ],
         extra_packages=[AGENT_WHL_FILE],
-        env_vars={
-            "GOOGLE_autonomous": "False",
-            "GOOGLE_show_thoughts": "False"
-        }
     )
 
-    user_id = "supervisor"
+    user_id = "user"
     logging.debug("testing deployment:")
     session = remote_app.create_session(user_id=user_id)
     need_to_print_resource_name = True

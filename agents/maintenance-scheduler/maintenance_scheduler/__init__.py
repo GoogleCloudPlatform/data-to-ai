@@ -12,9 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Includes all shared libraries for the agent."""
-
 from . import agent
-
-
-__all__ = ["agent"]
