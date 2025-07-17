@@ -119,6 +119,91 @@ async def get_unresolved_incidents() -> List[BusStopIncident]:
     }
 
 
+async def get_unresolved_incidents_da() -> List[BusStopIncident]:
+    # TODO: fix the example
+    """
+      Get a list of unresolved bus stop incidents.
+
+      Returns:
+          list: List of bust stop incidents
+
+      Example:
+          >>> get_unresolved_incidents()
+          [BusStopIncident(bus_stop=BusStop(id='5', address=USAddress(street='4999 list Avenue', city='Anytown', state='NY', zip='10001')), source_image_uri='gs://my-bucket-bus-stop-images/images/PA-02.jpg', source_image_mime_type='image/jpeg', status='open', description='"The bus stop appears to have some cleanliness issues. There is litter and dead leaves on the sidewalk and along the curb. The trash can is open and appears to have some trash inside. The bench has some wear and tear, but does not appear to be damaged. There are no obvious safety hazards. The bus stop includes a bench and a trash can. There is a bus stop sign visible in the background."'), BusStopIncident(bus_stop=BusStop(id='7', address=USAddress(street='3643 Tasmanian devil Street', city='Anytown', state='NY', zip='10001')), source_image_uri='gs://my-bucket-bus-stop-images/images/PC-01.jpg', source_image_mime_type='image/jpeg', status='open', description='"The bus stop appears to have a bench, a trash can, and a bus stop sign. The bench has some wear and tear, and there are leaves on the ground around the bench, indicating a need for cleaning. The trash can is present, which is good for cleanliness. There is no visible graffiti or damage to the bus stop amenities. The red curb is in good condition. The overall cleanliness is slightly compromised by the leaves and general wear, warranting a cleaning."')]
+      """
+
+    logger.info("Getting the list of incidents")
+    incidents = []
+
+    
+    if config.mock_tools:
+        incidents.append(
+            BusStopIncident(
+                status="open",
+                bus_stop=BusStop(
+                    id='stop-1',
+                    address=USAddress(street="123 Main", city="New York",
+                                      state="NY", zip="10001")),
+                source_image_uri=f"https://storage.mtls.cloud.google.com/{config.CLOUD_PROJECT}-multimodal/sources/MA-02-broken-glass.jpg",
+                source_image_mime_type="image/jpeg"))
+        incidents.append(
+            BusStopIncident(
+                status="open",
+                bus_stop=BusStop(
+                    id='stop-2',
+                    address=USAddress(
+                        street="457 1st Street", city="New York", state="NY",
+                        zip="10002")),
+                source_image_uri="https://storage.mtls.cloud.google.com/{config.CLOUD_PROJECT}-multimodal/sources/MC-02-dirty-damaged.jpg",
+                source_image_mime_type="image/jpeg"))
+    else:
+        try:
+            rows = bigquery_client.query_and_wait(
+                project=config.get_bigquery_run_project(),
+                query=f"""
+                SELECT incidents.incident_id, incidents.bus_stop_id, incidents.status,
+                    reports.uri as source_image_uri, reports.content_type as source_image_mime_type,
+                    reports.description, bus_stops.address
+                FROM `{config.get_bigquery_data_project()}.bus_stop_image_processing.incidents` incidents
+                JOIN `{config.get_bigquery_data_project()}.bus_stop_image_processing.image_reports` reports
+                    ON incidents.open_report_id = reports.report_id
+                JOIN `{config.get_bigquery_data_project()}.bus_stop_image_processing.bus_stops` bus_stops
+                    ON incidents.bus_stop_id = bus_stops.bus_stop_id
+                WHERE incidents.status = 'OPEN' 
+            """
+            )
+
+            for row in rows:
+                incidents.append(BusStopIncident(
+                    status=row.status.lower(),
+                    incident_image_url=row.source_image_uri.replace("gs://",
+                                                                  "https://storage.mtls.cloud.google.com/"),
+                    incident_image_mime_type=row.source_image_mime_type,
+                    description=row.description,
+                    bus_stop=BusStop(
+                        id=row.bus_stop_id,
+                        address=USAddress(
+                            street=row.address['street'],
+                            city=row.address['city'],
+                            state=row.address['state'],
+                            zip=row.address['zip'])
+                    )
+                ))
+        except Exception as ex:
+            logger.error("Call to retrieve incidents failed: %s", str(ex))
+            return {
+                "status": "error"
+            }
+
+    logger.info("Retrieved incidents: %s", incidents)
+    return {
+        "status": "success",
+        "bus_stop_incidents": incidents
+    }
+
+
+
+
 def get_expected_number_of_passengers(bus_stop_ids: list) -> dict:
     """Provides expected number of passengers for a particular bus stop at some point in the future.
 
