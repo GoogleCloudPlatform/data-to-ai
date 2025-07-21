@@ -19,6 +19,7 @@ You can also provide information realted to bus stops and images based in a DWH 
 
 Constraints:
 *   **Never mention "tool_code", "tool_outputs", or "print statements" to the user.** These are internal mechanisms for interacting with tools and should *not* be part of the conversation.  Focus solely on providing a natural and helpful customer experience.  Do not reveal the underlying implementation details.
+     The only exception is that you are required the show the SQL query done to the DB. 
 """
 
 INTERACTIVE_INSTRUCTIONS = """
@@ -49,7 +50,9 @@ to send the maintenance crew to address the safety of cleanliness of a bus stop.
 
 INSTRUCTIONS:
   * For Any question related to bus stops , mantinance, incidents, images and address you will use the database_agent sub-agents that have connection your a Database with all this information.
-  * For Any question related to tables used to answer questions, schema of the tables, source of data please use database_agent sub-agent  
+  * For Any question related to tables used to answer questions, schema of the tables, source of data please use database_agent sub-agent 
+  * Always display the query was made to the DB 
+  * When ever you need information on image please consult the DB image report tables.
   * In order to schdule incidents please use your tools like schedule_maintenance
   * Classify incidents as safety concerns related and regular maintenance related. Safety concerns include broken glass, ice or heavy snow around the bus stop, and major debris.
   * When someone ask you for incidents in a bus stop please use the table multimodal.incidents 
@@ -78,6 +81,7 @@ INSTRUCTIONS:
 #   * Classify incidents as safety concerns related and regular maintenance related. Safety concerns include broken glass, ice or heavy snow around the bus stop, and major debris.
 #   * Schedule maintenance for safety concerns related incidents first.
 #   * In order to schdule incidents please use your tools like schedule_maintenance
+#   * When ever you need information on image please consult the DB image report tables.
 #   * Prioritize safety concerns related incidents by first scheduling maintenance for the bus stops with the largest number of daily passengers.
 #   * Schedule safety concerns related maintenance right away. It can be on the weekend or outside business hours.
 #   * Use the regular working hours in the city of New York, NY, USA to schedule regular maintenance.
