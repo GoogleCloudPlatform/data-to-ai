@@ -368,6 +368,14 @@ under the Agents menu.
 
 Use the agent the way you used it when testing the agent locally.
 
+## Using MCP Toolbox for Databases
+
+By default, the agent uses tools which interact with BigQuery using the BigQuery Python client
+library. Calls to BigQuery APIs are made directly from the agent. In many cases it might be
+desirable to move this logic to a dedicated server. [MCP Toolbox for Databases](https://googleapis.github.io/genai-toolbox/getting-started/introduction/) is one such option.
+
+
+
 ## Troubleshooting the agent
 
 ### The agent doesn't prioritize maintenance of the right bus stop

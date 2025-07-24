@@ -31,8 +31,8 @@ from .shared_libraries.callbacks import (
 )
 from .tools.email_content_generator import email_content_generator_tool
 from .tools.tools import (
-    get_unresolved_incidents,
-    get_expected_number_of_passengers,
+    get_unresolved_incidents_tool,
+    get_expected_number_of_passengers_tool,
     schedule_maintenance,
     get_current_time,
     is_time_on_weekend
@@ -72,8 +72,8 @@ root_agent = Agent(
     planner=BuiltInPlanner(
         thinking_config=ThinkingConfig(include_thoughts=configs.show_thoughts)),
     tools=[
-        get_unresolved_incidents,
-        get_expected_number_of_passengers,
+        get_unresolved_incidents_tool,
+        get_expected_number_of_passengers_tool,
         schedule_maintenance,
         get_current_time,
         email_content_generator_tool,
