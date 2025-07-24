@@ -27,9 +27,13 @@ from google.cloud import bigquery
 from maintenance_scheduler.config import Config
 from maintenance_scheduler.entities.bus_stop import BusStop, BusStopIncident, \
     USAddress
+from google.cloud import storage
+from datetime import datetime
 
 bigquery_client = bigquery.Client(client_info=ClientInfo(
     user_agent="cloud-solutions/data-to-ai-agents-scheduler-usage-v1"))
+
+storage_client = storage.Client(project="agents-bq-demos")
 
 config = Config()
 
@@ -393,3 +397,36 @@ def is_time_on_weekend(day: int, month: int, year: int) -> bool:
     logger.info("Is day a weekend: %s %s %s: %s", year, month, day, is_weekend)
 
     return {"is_weekend": is_weekend}
+
+
+
+
+def get_image_from_bucket( gs_uri: str) -> str:
+        """
+        Retrieves the public URL of an image from a Google Cloud Storage bucket.
+
+        Args:
+            gs_uri (str): uri to the image in a bucket
+        Returns:
+            str: The public URL of the image, or an error message if not found or accessible.
+        """
+        try: 
+            if not gs_uri.startswith("gs://"):
+                raise ValueError("Invalid GCS URI format. Must start with 'gs://'")
+
+            # Remove the "gs://" prefix
+            path_without_prefix = gs_uri[len("gs://"):]
+
+            # Split the path into bucket and object parts
+            parts = path_without_prefix.split("/", 1)
+            if len(parts) < 2:
+                raise ValueError("Invalid GCS URI format. Must include bucket and object.")
+
+            bucket_name = parts[0]
+            object_name = parts[1]
+
+            # Construct the HTTPS URL
+            https_url = f"https://storage.cloud.google.com/{bucket_name}/{object_name}?authuser=2"
+            return https_url
+        except Exception as e:
+            return f"An error occurred while retrieving the image from GCS: {e}"

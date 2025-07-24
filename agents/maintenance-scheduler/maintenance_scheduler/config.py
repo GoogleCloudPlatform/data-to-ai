@@ -67,6 +67,9 @@ class Config(BaseSettings):
     show_thoughts: bool = Field(
         default=True,
         description="Show model's thoughts")
+    #Conversational analtyics API configuration 
+    CA_API_AGENT_ID: str = Field(default="data_agent_dwh_bigquery_1")
+    BQ_DATASET: str = Field(default="bus_stop_image_processing")  
 
     def get_bigquery_data_project(self) -> str:
         return self.CLOUD_BIGQUERY_DATA_PROJECT or self.CLOUD_PROJECT

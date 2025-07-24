@@ -35,7 +35,8 @@ from .tools.tools import (
     get_expected_number_of_passengers,
     schedule_maintenance,
     get_current_time,
-    is_time_on_weekend
+    is_time_on_weekend, 
+    get_image_from_bucket
 )
 from .sub_agents.bigquery.agent import database_agent
 warnings.filterwarnings("ignore", category=UserWarning, module=".*pydantic.*")
@@ -79,6 +80,7 @@ root_agent = Agent(
         schedule_maintenance,
         get_current_time,
         email_content_generator_tool,
+        get_image_from_bucket,
         is_time_on_weekend
     ],
     after_tool_callback=after_tool,

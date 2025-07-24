@@ -27,6 +27,9 @@ from google.cloud import geminidataanalytics
 from google.cloud import geminidataanalytics
 
 from .tools import ask_lakehouse
+from ...config import Config
+
+configs = Config()
 
     
 def add_tables(table_names:[],bq_dataset_id:str,billing_project:str) -> None: 
@@ -40,31 +43,28 @@ def add_tables(table_names:[],bq_dataset_id:str,billing_project:str) -> None:
     return bigquery_table_references
 
 
+
 def create_CA_agent(callback_context: CallbackContext) -> None:
-    billing_project =callback_context.state["billing_project"] 
-    data_agent_id = callback_context.state["data_agent_id"] 
+
+    billing_project =configs.CLOUD_PROJECT
+    data_agent_id = configs.CA_API_AGENT_ID
+    conversation_name = callback_context.state["conversation_name"]
+    agent_name = callback_context.state["agent_name"]
     conversation_id = callback_context.state["conversation_id"]
+    request = geminidataanalytics.GetDataAgentRequest(name=agent_name,)
 
-    request = geminidataanalytics.GetDataAgentRequest(
-    name=f"projects/{billing_project}/locations/global/dataAgents/",)
-
-# Make the request
+    # Make the request to see if the agents and conversation were created if not create them
     try:
        response = data_agent_client.get_data_agent(request=request)
     except Exception as e:
         print (e)
-
         data_agent_client = geminidataanalytics.DataAgentServiceClient()
         data_chat_client = geminidataanalytics.DataChatServiceClient()
         bigquery_table_references=[]
 
-        # bq_dataset_id = "bus_stop_image_processing"
-        # table_names = ["bus_stops"]
-        # bigquery_table_references = add_tables(table_names,bq_dataset_id,billing_project)
-
-        bq_dataset_id = "bus_stop_image_processing"
-        table_names = ["bus_stops","image_reports","incidents","object_watermark","objects","report_watermark"]
-        bigquery_table_references =  bigquery_table_references + (add_tables(table_names,bq_dataset_id,billing_project))
+        bq_dataset_id = configs.BQ_DATASET
+        table_names = ["bus_stops","image_reports","incidents","report_watermark","bus_ridership"]
+        bigquery_table_references =  add_tables(table_names,bq_dataset_id,billing_project)
 
         datasource_references = geminidataanalytics.DatasourceReferences()
         datasource_references.bq.table_references = bigquery_table_references
@@ -81,11 +81,11 @@ def create_CA_agent(callback_context: CallbackContext) -> None:
 
         data_agent = geminidataanalytics.DataAgent()
         data_agent.data_analytics_agent.published_context = published_context
-        data_agent.name = f"projects/{billing_project}/locations/global/dataAgents/{data_agent_id}" # Optional
+        data_agent.name = agent_name # Optional
 
         request = geminidataanalytics.CreateDataAgentRequest(
             parent=f"projects/{billing_project}/locations/global",
-            data_agent_id=data_agent_id, # Optional
+            data_agent_id=agent_name, # Optional
             data_agent=data_agent,
         )
 
@@ -94,32 +94,32 @@ def create_CA_agent(callback_context: CallbackContext) -> None:
             print("Data Agent created")
         except Exception as e:
             print(f"Error creating Data Agent: {e}")
-        request = geminidataanalytics.GetDataAgentRequest(
-            name=f"projects/{billing_project}/locations/global/dataAgents/{data_agent_id}",
-        )
 
-        # # Initialize request arguments        
 
-        conversation = geminidataanalytics.Conversation()
-        conversation.agents = [f'projects/{billing_project}/locations/global/dataAgents/{data_agent_id}']
-        conversation.name = f"projects/{billing_project}/locations/global/conversations/{conversation_id}"
+    #create now the conversation
+    conversation = geminidataanalytics.Conversation()
+    conversation.agents = [agent_name]
+    conversation.name = conversation_name
 
-        request = geminidataanalytics.CreateConversationRequest(
-            parent=f"projects/{billing_project}/locations/global",
-            conversation_id=conversation_id,
-            conversation=conversation,
-        )
 
-        # Make the request
-        response = data_chat_client.create_conversation(request=request)
+    request = geminidataanalytics.CreateConversationRequest(
+        parent=f"projects/{billing_project}/locations/global",
+        conversation_id=conversation_id,
+        conversation=conversation,
+    )
+    # Make the request
+    response = data_chat_client.create_conversation(request=request)
 
 def setup_before_agent_call(callback_context: CallbackContext) -> None:
-    """Setup the agent."""
+    """Setup the agent and conversation """
+    if "conversation_name" not in callback_context.state:
+        billing_project =configs.CLOUD_PROJECT
+        data_agent_id =configs.CA_API_AGENT_ID
 
-    if "data_agent_id" not in callback_context.state:
-        callback_context.state["billing_project"] = "agents-bq-demos"
-        callback_context.state["data_agent_id"] =  "data_agent_stops_3"
-        callback_context.state["conversation_id"] =callback_context.invocation_id 
+        callback_context.state["conversation_name"] = f"projects/{billing_project}/locations/global/conversations/{callback_context.invocation_id}"
+        callback_context.state["conversation_id"] = callback_context.invocation_id
+        callback_context.state["agent_name"] =  f"projects/{billing_project}/locations/global/dataAgents/{data_agent_id}"
+ 
         create_CA_agent(callback_context)
         # # callback_context.state["data_agent_client"] = data_agent_client
         # callback_context.state["data_chat_client"] = data_chat_client

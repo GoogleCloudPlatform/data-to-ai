@@ -2,6 +2,7 @@ import datetime
 import logging
 import os
 import re
+from ...config import Config
 
 
 from google.adk.tools import ToolContext
@@ -9,6 +10,7 @@ from google.adk.tools import ToolContext
 from google.cloud import geminidataanalytics
 data_chat_client = geminidataanalytics.DataChatServiceClient()
 
+configs = Config()
 
 def ask_lakehouse(
     question: str,
@@ -19,13 +21,13 @@ def ask_lakehouse(
     messages = [geminidataanalytics.Message()]
     messages[0].user_message.text = question
 
-    data_agent_id = tool_context.state["data_agent_id"] 
-    conversation_id = tool_context.state["conversation_id"]
-    billing_project= tool_context.state["billing_project"]
+    agent_name = tool_context.state["agent_name"] 
+    conversation_name = tool_context.state["conversation_name"]
+    billing_project =configs.CLOUD_PROJECT
     # Create a conversation_reference
     conversation_reference = geminidataanalytics.ConversationReference()
-    conversation_reference.conversation = f"projects/{billing_project}/locations/global/conversations/{conversation_id}"
-    conversation_reference.data_agent_context.data_agent = f"projects/{billing_project}/locations/global/dataAgents/{data_agent_id}"
+    conversation_reference.conversation = conversation_name
+    conversation_reference.data_agent_context.data_agent = agent_name
     # conversation_reference.data_agent_context.credentials = credentials
 
     # Form the request
@@ -41,7 +43,6 @@ def ask_lakehouse(
     responses = []
     for response in stream:
         responses.append(str(response.system_message))
-
     
     return responses
 

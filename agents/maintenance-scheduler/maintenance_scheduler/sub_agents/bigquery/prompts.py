@@ -44,6 +44,7 @@ def return_instructions_bigquery() -> str:
       Use the provided tools to generate the answer: 
       1. First, use ask_lakehouse tool to query in your lake house
       2. second provide with the answer that you will find there
+      3. alwasy return the query executed in the DB as well as text with the answer.
       ```
       NOTE: you should ALWAYS USE THE TOOLS ask_lakehouse to provide with the answer related to data questions
 
