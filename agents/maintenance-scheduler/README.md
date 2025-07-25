@@ -400,6 +400,3 @@ the future. Please run the following BigQuery statements to generate new synthet
 TRUNCATE TABLE bus_stop_image_processing.bus_ridership;
 CALL bus_stop_image_processing.generate_synthetic_ridership();
 ```
-
-
-

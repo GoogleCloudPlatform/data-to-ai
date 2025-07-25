@@ -63,3 +63,4 @@ crash.*.log
 /infrastructure/project-setup/.terraform.lock.hcl
 /agents/maintenance-scheduler/poetry.lock
 /agents/maintenance-scheduler/deployment/*.whl
+__pycache__
