@@ -80,7 +80,6 @@ def create_CA_agent(callback_context: CallbackContext) -> None:
         published_context.datasource_references = datasource_references
         # Optional: To enable advanced analysis with Python, include the following line:
         published_context.options.analysis.python.enabled = True
-        print("Created context")
 
         data_agent = geminidataanalytics.DataAgent()
         data_agent.data_analytics_agent.published_context = published_context
