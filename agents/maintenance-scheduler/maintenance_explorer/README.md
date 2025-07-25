@@ -1,11 +1,14 @@
-# Bus Stop Maintenance Scheduling Agent
+# Bus Stop Maintenance Exploring Agent
 
 ## Overview
 
-This project implements an set of  AI-powered bus stop maintenance agents:
-* **Maintenance_exporer Agent:** Data exploring agent with read permisons that will help you to explore and query your data
-* **Maintenance_exporer Agent:** Bus stop selection can be prioritized using rules defined in natural
-  language.
+This project implements an set of  AI-powered bus stop maintenance exploring agent that will allow you query and obtain information about 
+the Bust Stops. 
+NOTE : this agent have only read capabilities for escuting action on scheduling please see the Mantaince_scheduler agent 
+
+
+TODO finish... 
+
 
 TODO check with Sergei before moving specifics of the agent to each folder.
 ## Agent Details

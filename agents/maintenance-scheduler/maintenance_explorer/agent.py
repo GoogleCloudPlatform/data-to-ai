@@ -20,18 +20,21 @@ from google.adk.agents import Agent
 from google.adk.agents.callback_context import CallbackContext
 from google.genai import types
 
-from . import tools
+from .tools import tools
 # from .chase_sql import chase_db_tools
-from .prompts import return_instructions_bigquery
 from google.cloud import geminidataanalytics
 from google.cloud import geminidataanalytics
+from google.adk.planners import BuiltInPlanner
+from google.genai.types import ThinkingConfig
 
-from .tools import ask_lakehouse
-from ...config import Config
+
+from .tools.tools import ask_lakehouse
+from .config import Config
+from .prompts import GLOBAL_INSTRUCTION, INSTRUCTION, AUTONOMOUS_INSTRUCTIONS, INTERACTIVE_INSTRUCTIONS
 
 configs = Config()
 
-    
+
 def add_tables(table_names:[],bq_dataset_id:str,billing_project:str) -> None: 
     bigquery_table_references=[]
     for table_name in table_names:
@@ -82,6 +85,7 @@ def create_CA_agent(callback_context: CallbackContext) -> None:
         data_agent = geminidataanalytics.DataAgent()
         data_agent.data_analytics_agent.published_context = published_context
         data_agent.name = agent_name # Optional
+    
 
         request = geminidataanalytics.CreateDataAgentRequest(
             parent=f"projects/{billing_project}/locations/global",
@@ -127,9 +131,17 @@ def setup_before_agent_call(callback_context: CallbackContext) -> None:
 
 
 
-database_agent = Agent(
-    name="database_agent",
-    instruction=return_instructions_bigquery(),
+root_agent = Agent(
+    name="maintenance_explorer",
+    model=configs.root_agent_settings.model,
+    description=configs.root_agent_settings.description,
+    global_instruction=GLOBAL_INSTRUCTION
+                       + (AUTONOMOUS_INSTRUCTIONS if configs.autonomous
+                          else INTERACTIVE_INSTRUCTIONS),
+    planner=BuiltInPlanner(
+        thinking_config=ThinkingConfig(include_thoughts=configs.show_thoughts)),
+ 
+    instruction= INSTRUCTION,
     tools=[ ask_lakehouse],
     before_agent_callback=setup_before_agent_call,
     generate_content_config=types.GenerateContentConfig(temperature=0.01),
