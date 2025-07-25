@@ -28,9 +28,9 @@ from google.adk.planners import BuiltInPlanner
 from google.genai.types import ThinkingConfig
 
 
-from .tools.tools import ask_lakehouse
+from .tools.tools import ask_lakehouse,get_image_from_bucket
 from .config import Config
-from .prompts import GLOBAL_INSTRUCTION, INSTRUCTION, AUTONOMOUS_INSTRUCTIONS, INTERACTIVE_INSTRUCTIONS
+from .prompts import GLOBAL_INSTRUCTION, INSTRUCTION
 
 configs = Config()
 
@@ -135,14 +135,13 @@ root_agent = Agent(
     name="maintenance_explorer",
     model=configs.root_agent_settings.model,
     description=configs.root_agent_settings.description,
-    global_instruction=GLOBAL_INSTRUCTION
-                       + (AUTONOMOUS_INSTRUCTIONS if configs.autonomous
-                          else INTERACTIVE_INSTRUCTIONS),
+    global_instruction=GLOBAL_INSTRUCTION,
     planner=BuiltInPlanner(
         thinking_config=ThinkingConfig(include_thoughts=configs.show_thoughts)),
  
     instruction= INSTRUCTION,
-    tools=[ ask_lakehouse],
+    tools=[ ask_lakehouse,
+            get_image_from_bucket],
     before_agent_callback=setup_before_agent_call,
     generate_content_config=types.GenerateContentConfig(temperature=0.01),
 )

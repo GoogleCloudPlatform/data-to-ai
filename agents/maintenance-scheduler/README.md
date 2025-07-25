@@ -2,12 +2,8 @@
 
 ## Overview
 
-This project implements an set of  AI-powered bus stop maintenance agents:
-* **Maintenance_exporer Agent:** Data exploring agent with read permisons that will help you to explore and query your data
-* **Maintenance_exporer Agent:** Bus stop selection can be prioritized using rules defined in natural
-  language.
+This project implements an AI-powered bus stop maintenance scheduling agent (the agent).
 
-TODO check with Sergei before moving specifics of the agent to each folder.
 ## Agent Details
 
 The agent's main task is to analyze open bus stop incidents, prioritize repairs, and dispatch
@@ -404,6 +400,3 @@ the future. Please run the following BigQuery statements to generate new synthet
 TRUNCATE TABLE bus_stop_image_processing.bus_ridership;
 CALL bus_stop_image_processing.generate_synthetic_ridership();
 ```
-
-
-
