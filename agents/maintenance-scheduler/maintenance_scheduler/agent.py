@@ -33,7 +33,7 @@ from .tools.email_content_generator import email_content_generator_tool
 from .tools.tools import (
     get_unresolved_incidents_tool,
     get_expected_number_of_passengers_tool,
-    schedule_maintenance,
+    schedule_maintenance_tool,
     get_current_time,
     is_time_on_weekend
 )
@@ -74,7 +74,7 @@ root_agent = Agent(
     tools=[
         get_unresolved_incidents_tool,
         get_expected_number_of_passengers_tool,
-        schedule_maintenance,
+        schedule_maintenance_tool,
         get_current_time,
         email_content_generator_tool,
         is_time_on_weekend

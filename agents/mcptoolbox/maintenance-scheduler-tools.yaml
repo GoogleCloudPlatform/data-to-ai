@@ -26,26 +26,68 @@ tools:
     source: bigquery-source
     statement: |
       WITH forecast AS (
-                    SELECT
-                      bus_stop_id, forecast_timestamp, 
-                      CAST(forecast_value AS INT64) as expected_number_of_passengers
-                    FROM
-                      AI.FORECAST(
-                        (SELECT bus_stop_id, event_ts, num_riders
-                          FROM `${CLOUD_BIGQUERY_DATA_PROJECT}.bus_stop_image_processing.bus_ridership`
-                          WHERE bus_stop_id = @bus_stop_id),
-                        data_col => 'num_riders',
-                        timestamp_col => 'event_ts',
-                        model => 'TimesFM 2.0',
-                        id_cols => ['bus_stop_id'],
-                        horizon => 500,
-                        confidence_level => .8)
-                )
-                SELECT bus_stop_id, forecast_timestamp, expected_number_of_passengers 
-                    FROM forecast WHERE forecast_timestamp BETWEEN CURRENT_TIMESTAMP() AND TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 DAY)
+        SELECT
+        bus_stop_id, forecast_timestamp,
+        CAST(forecast_value AS INT64) as expected_number_of_passengers
+        FROM
+        AI.FORECAST(
+        (SELECT bus_stop_id, event_ts, num_riders
+        FROM `${CLOUD_BIGQUERY_DATA_PROJECT}.bus_stop_image_processing.bus_ridership`
+        WHERE bus_stop_id IN UNNEST(@bus_stop_ids)),
+        data_col => 'num_riders',
+        timestamp_col => 'event_ts',
+        model => 'TimesFM 2.0',
+        id_cols => ['bus_stop_id'],
+        horizon => 500,
+        confidence_level => .8)
+      )
+      SELECT bus_stop_id, ARRAY_AGG(
+        STRUCT(FORMAT_TIMESTAMP("%m/%d/%Y %H:%M", forecast_timestamp, @time_zone) as time, 
+              GREATEST(expected_number_of_passengers, 0) as number_of_passengers)) as forecast
+      FROM forecast
+      WHERE forecast_timestamp BETWEEN CURRENT_TIMESTAMP() AND TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 DAY)
+      GROUP BY bus_stop_id
+    description: |
+      Provides expected number of passengers for a particular bus stop at some point in the future.
+    parameters:
+      - name: bus_stop_ids
+        type: array
+        description: Bus stop ids
+        items:
+          name: bus_stop_id
+          type: string
+          description: Bus stop id
+      - name: time_zone
+        type: string
+        description: Time zone of where the bus stops are located
+
+  schedule-maintenance:
+    kind: bigquery-sql
+    source: bigquery-source
+    statement: |
+      UPDATE `${CLOUD_BIGQUERY_DATA_PROJECT}.bus_stop_image_processing.incidents`
+                      SET status = 'SCHEDULED', 
+                          maintenance_details = STRUCT(
+                          @maintenance_start as scheduled_time, 
+                          @reason as reason, 
+                          @notification_subject as notification_subject, 
+                          @notification_content as notification_body)
+                      WHERE status = 'OPEN' and bus_stop_id = @bus_stop_id
     description: |
       Provides expected number of passengers for a particular bus stop at some point in the future.
     parameters:
       - name: bus_stop_id
         type: string
         description: Bus stop id
+      - name: maintenance_start
+        type: string
+        description: Maintenance start time
+      - name: reason
+        type: string
+        description: Reason for maintenance
+      - name: notification_subject
+        type: string
+        description: Subject of the notification email
+      - name: notification_content
+        type: string
+        description: Contents of the notification email
