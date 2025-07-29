@@ -1,8 +1,8 @@
 sources:
   bigquery-source:
     kind: bigquery
-    project: ${GOOGLE_CLOUD_PROJECT}
-    location: ${GOOGLE_CLOUD_LOCATION}
+    project: ${BIGQUERY_RUN_PROJECT_ID}
+    location: ${BIGQUERY_DATA_LOCATION}
 
 tools:
   get-unresolved-incidents:
@@ -12,10 +12,10 @@ tools:
       SELECT incidents.incident_id, incidents.bus_stop_id, incidents.status,
                     reports.uri as source_image_uri, reports.content_type as source_image_mime_type,
                     reports.description, bus_stops.address
-                FROM `${CLOUD_BIGQUERY_DATA_PROJECT}.bus_stop_image_processing.incidents` incidents
-                JOIN `${CLOUD_BIGQUERY_DATA_PROJECT}.bus_stop_image_processing.image_reports` reports
+                FROM `${BIGQUERY_DATA_PROJECT_ID}.bus_stop_image_processing.incidents` incidents
+                JOIN `${BIGQUERY_DATA_PROJECT_ID}.bus_stop_image_processing.image_reports` reports
                     ON incidents.open_report_id = reports.report_id
-                JOIN `${CLOUD_BIGQUERY_DATA_PROJECT}.bus_stop_image_processing.bus_stops` bus_stops
+                JOIN `${BIGQUERY_DATA_PROJECT_ID}.bus_stop_image_processing.bus_stops` bus_stops
                     ON incidents.bus_stop_id = bus_stops.bus_stop_id
                 WHERE incidents.status = 'OPEN'
     description: |
@@ -32,7 +32,7 @@ tools:
         FROM
         AI.FORECAST(
         (SELECT bus_stop_id, event_ts, num_riders
-        FROM `${CLOUD_BIGQUERY_DATA_PROJECT}.bus_stop_image_processing.bus_ridership`
+        FROM `${BIGQUERY_DATA_PROJECT_ID}.bus_stop_image_processing.bus_ridership`
         WHERE bus_stop_id IN UNNEST(@bus_stop_ids)),
         data_col => 'num_riders',
         timestamp_col => 'event_ts',
@@ -65,7 +65,7 @@ tools:
     kind: bigquery-sql
     source: bigquery-source
     statement: |
-      UPDATE `${CLOUD_BIGQUERY_DATA_PROJECT}.bus_stop_image_processing.incidents`
+      UPDATE `${BIGQUERY_DATA_PROJECT_ID}.bus_stop_image_processing.incidents`
                       SET status = 'SCHEDULED', 
                           maintenance_details = STRUCT(
                           @maintenance_start as scheduled_time, 
