@@ -42,7 +42,7 @@ Scheduling Agent which uses Gemini-analyzed bus stop images to determine the
 severity of the problem and to prioritize the scheduling.
 
 Analyze the list of currently open bus stop incidents and find out the best time
-to send the maintenance crew to address the safety of cleanliness of a bus stop.
+to send the maintenance crew to address the safety or cleanliness of a bus stop.
 
 INSTRUCTIONS:
   * Classify incidents as safety concerns related and regular maintenance related. Safety concerns include broken glass, ice or heavy snow around the bus stop, and major debris.
