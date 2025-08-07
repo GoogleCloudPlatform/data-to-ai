@@ -61,6 +61,7 @@ generate_content_config = types.GenerateContentConfig(
     top_p=0.95,
 )
 
+# For production deployments these options should be provided via configuration
 retry_options = HttpRetryOptions(
     attempts=10,
     initial_delay=10,
