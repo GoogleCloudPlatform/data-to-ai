@@ -18,9 +18,10 @@ import logging
 import warnings
 
 from google.adk import Agent
+from google.adk.models.google_llm import Gemini
 from google.adk.planners import BuiltInPlanner
 from google.genai import types
-from google.genai.types import ThinkingConfig
+from google.genai.types import ThinkingConfig, HttpRetryOptions
 
 from .config import Config
 from .prompts import GLOBAL_INSTRUCTION, INSTRUCTION, AUTONOMOUS_INSTRUCTIONS, \
@@ -60,10 +61,20 @@ generate_content_config = types.GenerateContentConfig(
     top_p=0.95,
 )
 
+retry_options = HttpRetryOptions(
+    attempts=10,
+    initial_delay=10,
+    max_delay=5000,
+    exp_base=1.5,
+    jitter=0.5
+)
 root_agent = Agent(
     name=configs.root_agent_settings.name,
     generate_content_config=generate_content_config,
-    model=configs.root_agent_settings.model,
+    model=Gemini(
+        model=configs.root_agent_settings.model,
+        retry_options=retry_options
+    ),
     description=configs.root_agent_settings.description,
     global_instruction=GLOBAL_INSTRUCTION
                        + (AUTONOMOUS_INSTRUCTIONS if configs.autonomous
