@@ -73,7 +73,7 @@ tools:
                           @notification_subject as notification_subject, 
                           @notification_content as notification_body)
                       WHERE status = 'OPEN' and bus_stop_id = @bus_stop_id;
-      SELECT "success" as result;
+      SELECT "success" as status;
     description: |
       Provides expected number of passengers for a particular bus stop at some point in the future.
     parameters:
