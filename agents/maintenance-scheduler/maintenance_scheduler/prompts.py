@@ -32,7 +32,7 @@ AUTONOMOUS_INSTRUCTIONS = """
 *   Assume that you need to schedule work autonomously
 *   Select the best possible solution and execute without confirmation
 *   Schedule one bus stop at a time
-*   Report is more bus stops require maintenance after completing scheduling
+*   Report if more bus stops require maintenance after completing scheduling
 """
 
 INSTRUCTION = """
