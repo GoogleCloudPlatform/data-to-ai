@@ -12,7 +12,7 @@ data_chat_client = geminidataanalytics.DataChatServiceClient()
 
 configs = Config()
 
-def ask_lakehouse(
+async def  ask_lakehouse(
     question: str,
     tool_context: ToolContext,
 ) -> str:
@@ -68,7 +68,7 @@ def get_image_from_bucket( gs_uri: str) -> str:
             object_name = parts[1]
 
             # Construct the HTTPS URL
-            https_url = f"https://storage.cloud.google.com/{bucket_name}/{object_name}?authuser=2"
+            https_url = f"https://storage.cloud.google.com/{bucket_name}/{object_name}"
             return https_url
         except Exception as e:
             return f"An error occurred while retrieving the image from GCS: {e}"
