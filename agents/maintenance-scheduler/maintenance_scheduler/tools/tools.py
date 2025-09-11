@@ -23,13 +23,19 @@ from zoneinfo import ZoneInfo
 
 from google.api_core.client_info import ClientInfo
 from google.cloud import bigquery
+from google.cloud.bigquery.enums import JobCreationMode
+from google.cloud.bigquery.job import QueryJobConfig
+
+from toolbox_core import ToolboxSyncClient
 
 from maintenance_scheduler.config import Config
 from maintenance_scheduler.entities.bus_stop import BusStop, BusStopIncident, \
     USAddress
 
 bigquery_client = bigquery.Client(client_info=ClientInfo(
-    user_agent="cloud-solutions/data-to-ai-agents-scheduler-usage-v1"))
+    user_agent="cloud-solutions/data-to-ai-agents-scheduler-usage-v1"),
+    default_job_creation_mode=JobCreationMode.JOB_CREATION_OPTIONAL
+)
 
 config = Config()
 
@@ -77,6 +83,9 @@ async def get_unresolved_incidents() -> List[BusStopIncident]:
         try:
             rows = bigquery_client.query_and_wait(
                 project=config.get_bigquery_run_project(),
+                job_config=QueryJobConfig(
+                    job_timeout_ms=60 * 1000
+                ),
                 query=f"""
                 SELECT incidents.incident_id, incidents.bus_stop_id, incidents.status,
                     reports.uri as source_image_uri, reports.content_type as source_image_mime_type,
@@ -94,7 +103,7 @@ async def get_unresolved_incidents() -> List[BusStopIncident]:
                 incidents.append(BusStopIncident(
                     status=row.status.lower(),
                     incident_image_url=row.source_image_uri.replace("gs://",
-                                                                  "https://storage.mtls.cloud.google.com/"),
+                                                                    "https://storage.mtls.cloud.google.com/"),
                     incident_image_mime_type=row.source_image_mime_type,
                     description=row.description,
                     bus_stop=BusStop(
@@ -200,7 +209,8 @@ def get_expected_number_of_passengers(bus_stop_ids: list) -> dict:
                 all_bus_stop_forecasts[bus_stop_id] = forecast
 
         except Exception as ex:
-            logger.error("Call to retrieve bus stop ridership failed: %s", str(ex))
+            logger.error("Call to retrieve bus stop ridership failed: %s",
+                         str(ex))
             return {
                 "status": "error"
             }
@@ -307,4 +317,19 @@ def is_time_on_weekend(day: int, month: int, year: int) -> bool:
     is_weekend = date.weekday() > 4
     logger.info("Is day a weekend: %s %s %s: %s", year, month, day, is_weekend)
 
+
     return {"is_weekend": is_weekend}
+
+
+get_unresolved_incidents_tool = get_unresolved_incidents
+get_expected_number_of_passengers_tool = get_expected_number_of_passengers
+schedule_maintenance_tool = schedule_maintenance
+
+if config.use_mcp_toolbox:
+    if not config.mcp_toolbox_uri:
+        raise ValueError(
+            "mcp_toolbox_uri must be set when use_mcp_toolbox is set to True.")
+    toolbox = ToolboxSyncClient(config.mcp_toolbox_uri)
+    get_unresolved_incidents_tool = toolbox.load_tool('get-unresolved-incidents')
+    get_expected_number_of_passengers_tool = toolbox.load_tool('get-expected-number-of-passengers')
+    schedule_maintenance_tool = toolbox.load_tool('schedule-maintenance')

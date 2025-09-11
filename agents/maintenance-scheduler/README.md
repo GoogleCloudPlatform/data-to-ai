@@ -188,7 +188,8 @@ The agent can respond to other prompts. You can experiment using these examples:
 * Schedule the maintenance of bus stop 5 at a different time
 * Show the email notification generated for the bus stop 5
 
-**Important:** The agent's instructions for this agent have not been fine-tuned. We used simple plain
+**Important:** The agent's instructions for this agent have not been fine-tuned. We used simple
+plain
 natural language to describe the work that the agent needs to perform. In our testing the reasoning
 that the agent did was very good with occasional scheduling suggestions that
 required correction. For production deployments additional tuning is recommended. Refer to
@@ -368,6 +369,165 @@ under the Agents menu.
 
 Use the agent the way you used it when testing the agent locally.
 
+## Using MCP Toolbox for Databases
+
+By default, the agent uses tools which interact with BigQuery using the BigQuery Python client
+library. Calls to BigQuery APIs are made directly from the agent. In many cases it might be
+desirable to move this functionality to a dedicated
+server. [MCP Toolbox for Databases](https://googleapis.github.io/genai-toolbox/getting-started/introduction/)
+is one such option.
+
+### Get the latest version of the Toolbox
+
+Follow the instructions
+on [this page](https://github.com/googleapis/genai-toolbox?tab=readme-ov-file#getting-started)
+
+### Start the server
+
+After the Terraform scripts successfully completed, the root directory of this repository will
+contain a small shell script, ".cloud-env.sh". This script will define environment variables which
+will be used to configure the toolbox.
+
+From the `agents/mcp-toolbox` directory run:
+
+```shell
+source ../../.cloud-env.sh 
+
+<installation path>/toolbox --tools-file=maintenance-scheduler-tools.yaml  --log-level=DEBUG
+```
+
+### Verify that the toolbox is running and is responds to the tool discovery calls
+
+```shell
+curl -H "Accept: application/json" http://127.0.0.1:5000/api/toolset | jq .
+```
+
+You should expect to see the response like this:
+
+```json
+{
+  "serverVersion": "0.9.0+binary.darwin.arm64.2b69700c5e40ad37eafd94f378a2e1174879402b",
+  "tools": {
+    "get-expected-number-of-passengers": {
+      "description": "Provides expected number of passengers for a particular bus stop at some point in the future.\n",
+      "parameters": [
+        {
+          "name": "bus_stop_ids",
+          "type": "array",
+          "required": true,
+          "description": "Bus stop ids",
+          "authSources": [],
+          "items": {
+            "name": "bus_stop_id",
+            "type": "string",
+            "required": true,
+            "description": "Bus stop id",
+            "authSources": []
+          }
+        },
+        {
+          "name": "time_zone",
+          "type": "string",
+          "required": true,
+          "description": "Time zone of where the bus stops are located",
+          "authSources": []
+        }
+      ],
+      "authRequired": []
+    },
+    "get-unresolved-incidents": {
+      "description": "Provides the list of unresolved bus stop incidents which require maintenance\n",
+      "parameters": [],
+      "authRequired": []
+    },
+    "schedule-maintenance": {
+      "description": "Provides expected number of passengers for a particular bus stop at some point in the future.\n",
+      "parameters": [
+        {
+          "name": "bus_stop_id",
+          "type": "string",
+          "required": true,
+          "description": "Bus stop id",
+          "authSources": []
+        },
+        {
+          "name": "maintenance_start",
+          "type": "string",
+          "required": true,
+          "description": "Maintenance start time",
+          "authSources": []
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "required": true,
+          "description": "Reason for maintenance",
+          "authSources": []
+        },
+        {
+          "name": "notification_subject",
+          "type": "string",
+          "required": true,
+          "description": "Subject of the notification email",
+          "authSources": []
+        },
+        {
+          "name": "notification_content",
+          "type": "string",
+          "required": true,
+          "description": "Contents of the notification email",
+          "authSources": []
+        }
+      ],
+      "authRequired": []
+    }
+  }
+}
+```
+
+The command above uses the toolset's custom API, which is used by the Python's ToolboxSyncClient. If
+this toolset is going to be accessed using a client which utilizes the MCP protocol, a different API
+will be used for discovery:
+
+```shell
+ curl -d '{"jsonrpc":"2.0","method":"tools/list","id":"tool_discovery_request_1"}' -N \
+ -H "Accept: application/json" -H "Content-Type: application/json" http://127.0.0.1:5000/mcp | jq .
+```
+
+The server will respond with the same list of tools, but using the MCP message format.
+
+You can
+also [use MCP Inspector](https://googleapis.github.io/genai-toolbox/getting-started/mcp_quickstart/#step-3-connect-to-mcp-inspector)
+for a more comprehensive analysis of the toolbox functionality.
+
+### Change the agent configuration
+
+Edit the `.env` file in the "agents/maintenance-scheduler/maintenance_scheduler" folder to have
+these lines:
+
+```shell
+use_mcp_toolbox=True
+mcp_toolbox_uri=http://127.0.0.1:5000
+```
+
+### Run the agent
+
+Restart the ADK if it's already running and execute the first prompt. When check at the toolbox's
+terminal window you will see several GET calls to "/api/tool/<tool-name>" - they are part of the
+toolbox client initialization process. Once the agent starts using tools, there will be
+corresponding POST calls to the toolbox.
+
+Run the scheduling process for a bus stop until the end to verify that all the tools behave as if
+they were in-agent tools.
+
+### Using the toolbox in production
+
+You can deploy the toolbox to a number of cloud services,
+including [Cloud Run](https://googleapis.github.io/genai-toolbox/how-to/deploy_toolbox/)
+and [GKE](https://googleapis.github.io/genai-toolbox/how-to/deploy_gke/). The agent code would need
+to be modified slightly to enable the right authentication. See [this documentation section] for
+details. 
+
 ## Troubleshooting the agent
 
 ### The agent doesn't prioritize maintenance of the right bus stop
@@ -379,7 +539,8 @@ criteria. If you see a systematic deviation from the desired output try:
 * Make sure that the description of the bus stop images is aligned with the agent goals. E.g., that
   the description describes possible safety concerns and talks about the bus stop cleanliness rather
   than, let's say, the location of the bus stop, weather, etc.
-* Verify that the "get the number of passengers" tool correctly returns predictions. See next section.
+* Verify that the "get the number of passengers" tool correctly returns predictions. See next
+  section.
 * Enable the `show_thought` configuration parameter. It might help find a logical flaw in the
   instructions.
 * Capture the output of the "get the incidents" and "get the number of passengers" function, create

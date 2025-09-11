@@ -18,9 +18,10 @@ import logging
 import warnings
 
 from google.adk import Agent
+from google.adk.models.google_llm import Gemini
 from google.adk.planners import BuiltInPlanner
 from google.genai import types
-from google.genai.types import ThinkingConfig
+from google.genai.types import ThinkingConfig, HttpRetryOptions
 
 from .config import Config
 from .prompts import GLOBAL_INSTRUCTION, INSTRUCTION, AUTONOMOUS_INSTRUCTIONS, \
@@ -31,9 +32,9 @@ from .shared_libraries.callbacks import (
 )
 from .tools.email_content_generator import email_content_generator_tool
 from .tools.tools import (
-    get_unresolved_incidents,
-    get_expected_number_of_passengers,
-    schedule_maintenance,
+    get_unresolved_incidents_tool,
+    get_expected_number_of_passengers_tool,
+    schedule_maintenance_tool,
     get_current_time,
     is_time_on_weekend
 )
@@ -60,10 +61,21 @@ generate_content_config = types.GenerateContentConfig(
     top_p=0.95,
 )
 
+# For production deployments these options should be provided via configuration
+retry_options = HttpRetryOptions(
+    attempts=10,
+    initial_delay=10,
+    max_delay=5000,
+    exp_base=1.5,
+    jitter=0.5
+)
 root_agent = Agent(
     name=configs.root_agent_settings.name,
     generate_content_config=generate_content_config,
-    model=configs.root_agent_settings.model,
+    model=Gemini(
+        model=configs.root_agent_settings.model,
+        retry_options=retry_options
+    ),
     description=configs.root_agent_settings.description,
     global_instruction=GLOBAL_INSTRUCTION
                        + (AUTONOMOUS_INSTRUCTIONS if configs.autonomous
@@ -72,9 +84,9 @@ root_agent = Agent(
     planner=BuiltInPlanner(
         thinking_config=ThinkingConfig(include_thoughts=configs.show_thoughts)),
     tools=[
-        get_unresolved_incidents,
-        get_expected_number_of_passengers,
-        schedule_maintenance,
+        get_unresolved_incidents_tool,
+        get_expected_number_of_passengers_tool,
+        schedule_maintenance_tool,
         get_current_time,
         email_content_generator_tool,
         is_time_on_weekend
