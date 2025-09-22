@@ -24,9 +24,12 @@ from .tools import tools
 from google.cloud import geminidataanalytics
 from google.adk.planners import BuiltInPlanner
 from google.genai.types import ThinkingConfig
-from .tools.tools import ask_lakehouse,get_image_from_bucket
+from .tools.tools import ask_lakehouse,get_image_from_bucket,analytics_chart_tool
 from .config import Config
 from .prompts import GLOBAL_INSTRUCTION, INSTRUCTION
+from google.adk.tools import FunctionTool
+from google.genai import types
+import io
 
 import logging
 logger = logging.getLogger(__name__)
@@ -154,7 +157,9 @@ root_agent = Agent(
  
     instruction= INSTRUCTION,
     tools=[ ask_lakehouse,
-            get_image_from_bucket],
+            get_image_from_bucket,
+            analytics_chart_tool,
+            ],
     before_agent_callback=setup_before_agent_call,
     generate_content_config=types.GenerateContentConfig(temperature=0.01),
 )

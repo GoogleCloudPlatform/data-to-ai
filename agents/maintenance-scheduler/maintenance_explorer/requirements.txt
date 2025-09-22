@@ -1,0 +1,3 @@
+google-cloud-geminidataanalytics
+altair
+vl-convert-python
