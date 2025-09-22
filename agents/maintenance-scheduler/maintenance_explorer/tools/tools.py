@@ -10,28 +10,18 @@ from google.adk.tools import FunctionTool, ToolContext
 from google.genai import types
 from google.cloud import storage
 import io
-
-
-from google.cloud import geminidataanalytics
-data_chat_client = geminidataanalytics.DataChatServiceClient()
-
-configs = Config()
-
-
-
-
-ADK_ARTIFACT_FILENAME = "property_image.jpg"
-IMAGE_MIME_TYPE = "image/jpg"  # Ensure this matches your image type
-
-
 from google.adk.tools import FunctionTool, ToolContext
 from google.cloud import geminidataanalytics
 from google.genai.types import Part, Blob
-from google.protobuf.json_format import MessageToDict
 import altair as alt
-import proto
 from io import BytesIO
 from typing import Dict, Any
+from google.cloud import geminidataanalytics
+
+logger = logging.getLogger(__name__)
+data_chat_client = geminidataanalytics.DataChatServiceClient()
+configs = Config()
+
 
 # Define the ADK Function Tool (Must be async since client.chat streams)
 async def query_and_save_chart(
@@ -60,7 +50,6 @@ async def query_and_save_chart(
         conversation_reference = geminidataanalytics.ConversationReference()
         conversation_reference.conversation = conversation_id
         conversation_reference.data_agent_context.data_agent = data_agent_id
-        # conversation_reference.data_agent_context.credentials = credentials
 
         client = geminidataanalytics.DataChatServiceClient()
         request = geminidataanalytics.ChatRequest(
@@ -131,8 +120,7 @@ async def query_and_save_chart(
         return {"status": "warning", "message": "Query successful, but no chart data was returned by the API."}
 
     except Exception as e:
-        print(e)
-        adas
+        logger.error(f"An error occurred during chart processing: {e}")
         return {"status": "exception", "error": f"An error occurred during chart processing: {e}"}
 
 # Final ADK Function Tool definition
@@ -144,7 +132,6 @@ async def  ask_lakehouse(
     tool_context: ToolContext,
 ) -> str:
     
-
     messages = [geminidataanalytics.Message()]
     messages[0].user_message.text = question
 
@@ -156,7 +143,6 @@ async def  ask_lakehouse(
     conversation_reference = geminidataanalytics.ConversationReference()
     conversation_reference.conversation = conversation_name
     conversation_reference.data_agent_context.data_agent = agent_name
-    # conversation_reference.data_agent_context.credentials = credentials
 
     # Form the request
     request = geminidataanalytics.ChatRequest(
@@ -187,7 +173,7 @@ async def save_image_from_gcs(
     """
     try:
         # 1. Download the image blob from GCS
-        print(f"Attempting to download {gs_uri} from GCS bucket...")
+        logger.info(f"Attempting to download {gs_uri} from GCS bucket...")
         if not gs_uri.startswith("gs://"):
                 raise ValueError("Invalid GCS URI format. Must start with 'gs://'")
             # Remove the "gs://" prefix
@@ -196,21 +182,10 @@ async def save_image_from_gcs(
         parts = path_without_prefix.split("/", 1)
         if len(parts) < 2:
                 raise ValueError("Invalid GCS URI format. Must include bucket and object.")
-        
-#         parts = path_without_prefix.split("/", 1)
-
-#         path_without_prefix = gs_uri[len("gs://"):]
-#              # Split the path into bucket and object parts
-#         parts = path_without_prefix.split("/", 1)
-#         if len(parts) < 2:
-#             raise ValueError("Invalid GCS URI format. Must include bucket and object.")
-# bucket_name = gcs_uri.split('/')[2]
-
         bucket_name = parts[0]
         image_name = parts[1]
-
+        file_name= os.path.basename(gs_uri)
         gcs_bucket = gcs_client.bucket(bucket_name)
-
         gcs_blob = gcs_bucket.blob(image_name)
 
         if not gcs_blob.exists():
@@ -221,40 +196,63 @@ async def save_image_from_gcs(
 
         # Download the content bytes
         image_bytes = gcs_blob.download_as_bytes()
-        print(f"Successfully downloaded {len(image_bytes)} bytes.")
+        logger.info(f"Successfully downloaded {len(image_bytes)} bytes.")
 
         # 2. Create a types.Part object for the artifact
         image_artifact_part = types.Part.from_bytes(
             data=image_bytes,
-            mime_type=IMAGE_MIME_TYPE
+            mime_type="image/jpg"
         )
 
         # 3. Save the Part to the ADK Artifact Service
         # The artifact_service is configured on the ADK Runner.
         version = await tool_context.save_artifact(
-            filename=ADK_ARTIFACT_FILENAME,
+            filename=file_name,
             artifact=image_artifact_part
         )
         
         # 4. Construct a response that the agent can use to show the image
         return {
             "status": "success",
-            "message": f"Image '{ADK_ARTIFACT_FILENAME}' saved to Artifact Service (Version {version}).",
-            "image_filename": ADK_ARTIFACT_FILENAME # This name will be displayed in the UI
+            "message": f"Image '{file_name}' saved to Artifact Service (Version {version}).",
+            "image_filename": file_name # This name will be displayed in the UI
         }
 
     except Exception as e:
-        print (e)
+        logger.error(f"An unexpected error occurred: {e}")
         return {
             "status": "error",
             "message": f"An unexpected error occurred: {e}"
         }
-
-
-
 
 get_image_from_bucket = FunctionTool(
     save_image_from_gcs,
     #description="Loads a property image from a Google Cloud Storage bucket and saves it as an artifact for display."
 )
 
+def get_external_url_image( gs_uri: str) -> str:
+        """
+        Retrieves the public URL of an image from a Google Cloud Storage bucket.
+
+        Args:
+            gs_uri (str): uri to the image in a bucket
+        Returns:
+            str: The public URL of the image, or an error message if not found or accessible.
+        """
+        try: 
+            if not gs_uri.startswith("gs://"):
+                raise ValueError("Invalid GCS URI format. Must start with 'gs://'")
+            # Remove the "gs://" prefix
+            path_without_prefix = gs_uri[len("gs://"):]
+            # Split the path into bucket and object parts
+            parts = path_without_prefix.split("/", 1)
+            if len(parts) < 2:
+                raise ValueError("Invalid GCS URI format. Must include bucket and object.")
+            bucket_name = parts[0]
+            object_name = parts[1]
+
+            # Construct the HTTPS URL
+            https_url = f"https://storage.cloud.google.com/{bucket_name}/{object_name}?authuser=1"
+            return https_url
+        except Exception as e:
+            return f"An error occurred while retrieving the image from GCS: {e}"
