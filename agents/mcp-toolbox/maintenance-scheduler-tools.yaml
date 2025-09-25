@@ -1,8 +1,9 @@
 sources:
   bigquery-source:
-    kind: "bigquery"
-    project: "agents-bq-demos"
-    location: us-central1
+  bigquery-source:
+    kind: bigquery
+    project: ${BIGQUERY_RUN_PROJECT_ID}
+    location: ${BIGQUERY_DATA_LOCATION}
 
 tools:
   get-unresolved-incidents:

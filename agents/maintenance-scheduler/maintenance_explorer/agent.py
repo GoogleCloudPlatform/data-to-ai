@@ -151,23 +151,8 @@ def setup_before_agent_call(callback_context: CallbackContext) -> None:
 
     # update the url to point to your server
 toolbox = ToolboxSyncClient("http://127.0.0.1:5000")
-
 # Load all the tools
 toolbox_toolset = toolbox.load_toolset('forecast_passangers')
-
-# toolbox_toolset = MCPToolset(
-#         connection_params=StreamableHTTPConnectionParams(
-#             url="127.0.0.1:5000",
-#             # If your deployed server requires authentication (e.g., an API key
-#             # for a Cloud Run service), you would add headers here.
-#             # headers={
-#             #     "Authorization": "Bearer " + os.getenv("TOOLBOX_API_KEY"),
-#             # }
-#         ),
-#         # Optional: You can filter the tools loaded from the server if you only want a few.
-#         # tool_filter=['search-hotels-by-location', 'book-hotel'] 
-#     )
-
 
 root_agent = Agent(
     name="maintenance_explorer",
