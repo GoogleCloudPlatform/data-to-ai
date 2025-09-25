@@ -30,6 +30,9 @@ from .prompts import GLOBAL_INSTRUCTION, INSTRUCTION
 from google.adk.tools import FunctionTool
 from google.genai import types
 import io
+from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
+from google.adk.tools.mcp_tool.mcp_session_manager import StreamableHTTPConnectionParams
+from toolbox_core import ToolboxSyncClient
 
 import logging
 logger = logging.getLogger(__name__)
@@ -146,6 +149,25 @@ def setup_before_agent_call(callback_context: CallbackContext) -> None:
 
 
 
+    # update the url to point to your server
+toolbox = ToolboxSyncClient("http://127.0.0.1:5000")
+
+# Load all the tools
+toolbox_toolset = toolbox.load_toolset('forecast_passangers')
+
+# toolbox_toolset = MCPToolset(
+#         connection_params=StreamableHTTPConnectionParams(
+#             url="127.0.0.1:5000",
+#             # If your deployed server requires authentication (e.g., an API key
+#             # for a Cloud Run service), you would add headers here.
+#             # headers={
+#             #     "Authorization": "Bearer " + os.getenv("TOOLBOX_API_KEY"),
+#             # }
+#         ),
+#         # Optional: You can filter the tools loaded from the server if you only want a few.
+#         # tool_filter=['search-hotels-by-location', 'book-hotel'] 
+#     )
+
 
 root_agent = Agent(
     name="maintenance_explorer",
@@ -160,7 +182,8 @@ root_agent = Agent(
             get_image_from_bucket,
             analytics_chart_tool,
             get_external_url_image,
-            ],
+            
+            ] +toolbox_toolset,
     before_agent_callback=setup_before_agent_call,
     generate_content_config=types.GenerateContentConfig(temperature=0.01),
 )

@@ -90,7 +90,6 @@ async def query_and_save_chart(
                     chart.display()
 
                     # --- 4. Save the PNG to ADK Artifacts ---
-                    
                     # Create the ADK Part object for binary data
                     chart_artifact = Part(
                         inline_data=Blob(
@@ -98,16 +97,12 @@ async def query_and_save_chart(
                             data=buffer.read()
                         )
                     )
-                    
-                    # Define a dynamic filename
-                    filename = f"analytics_chart.png"
-                    
+                    filename = f"analytics_chart.png"                    
                     # Save the artifact using the ToolContext (must use await)
                     version = await tool_context.save_artifact(
                         filename=filename,
                         artifact=chart_artifact
                     )
-                    
                     # --- 5. Return the Result ---
                     return {
                         "status": "success",
@@ -137,6 +132,7 @@ async def  ask_lakehouse(
 
     agent_name = tool_context.state["agent_name"] 
     conversation_name = tool_context.state["conversation_name"]
+    parent = tool_context.state["agent_parent"]
 
     billing_project =configs.CLOUD_PROJECT
     # Create a conversation_reference
@@ -146,7 +142,7 @@ async def  ask_lakehouse(
 
     # Form the request
     request = geminidataanalytics.ChatRequest(
-        parent = f"projects/{billing_project}/locations/global",
+        parent = parent,
         messages = messages,
         conversation_reference = conversation_reference
     )
