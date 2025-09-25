@@ -148,11 +148,21 @@ def setup_before_agent_call(callback_context: CallbackContext) -> None:
         create_ca_conversation(agent_name,parent_agent_name,conversation_name,conversation_id)
 
 
+tools = [ask_lakehouse,
+            get_image_from_bucket,
+            analytics_chart_tool,
+            get_external_url_image,]
 
-    # update the url to point to your server
-toolbox = ToolboxSyncClient("http://127.0.0.1:5000")
-# Load all the tools
-toolbox_toolset = toolbox.load_toolset('forecast_passangers')
+if configs.use_mcp_toolbox:
+    if not configs.mcp_toolbox_uri:
+        raise ValueError(
+            "mcp_toolbox_uri must be set when use_mcp_toolbox is set to True.")
+    toolbox = ToolboxSyncClient(configs.mcp_toolbox_uri)
+    # Load all the tools
+    toolbox_toolset = toolbox.load_toolset('forecast_passangers')
+    tools = tools + toolbox_toolset
+
+
 
 root_agent = Agent(
     name="maintenance_explorer",
@@ -163,12 +173,7 @@ root_agent = Agent(
         thinking_config=ThinkingConfig(include_thoughts=configs.show_thoughts)),
  
     instruction= INSTRUCTION,
-    tools=[ ask_lakehouse,
-            get_image_from_bucket,
-            analytics_chart_tool,
-            get_external_url_image,
-            
-            ] +toolbox_toolset,
+    tools=tools,
     before_agent_callback=setup_before_agent_call,
     generate_content_config=types.GenerateContentConfig(temperature=0.01),
 )

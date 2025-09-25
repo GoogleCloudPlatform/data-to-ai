@@ -1,9 +1,8 @@
 sources:
   bigquery-source:
-  bigquery-source:
-    kind: bigquery
-    project: ${BIGQUERY_RUN_PROJECT_ID}
-    location: ${BIGQUERY_DATA_LOCATION}
+    kind: "bigquery"
+    project: "agents-bq-demos"
+    location: us-central1
 
 tools:
   get-unresolved-incidents:
@@ -97,3 +96,4 @@ tools:
 toolsets:
  forecast_passangers:
    - get-expected-number-of-passengers
+   - schedule-maintenance
