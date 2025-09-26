@@ -45,7 +45,7 @@ class BusStop(BaseModel):
     safety_level: int = Field(description="Safety level")
     description: str = Field(description="Description of the bus stop")
 
-async def get_latest_bus_stop_images() -> List[BusStop]:
+async def get_latest_bus_stop_images(number_of_images: int) -> List[BusStop]:
     logger.info("Getting the list of bus stops")
     bus_stops = []
 
@@ -61,6 +61,8 @@ async def get_latest_bus_stop_images() -> List[BusStop]:
                 description
             FROM `{data_project_id}.multimodal.image_reports`
             WHERE description != '' 
+            ORDER BY updated DESC
+            LIMIT {number_of_images}
             """
         )
 
@@ -86,18 +88,9 @@ async def get_latest_bus_stop_images() -> List[BusStop]:
         "bus_stops": bus_stops
     }
 
-find_bus_stop_tool=McpToolset(
+mcp_toolset=McpToolset(
     connection_params=StreamableHTTPConnectionParams(
-        url="http://127.0.0.1:5000/mcp",
+        url="http://127.0.0.1:5000/mcp/bus-stop-images-toolset",
         headers={"Authorization": "Bearer your-auth-token-in-production"}
     ),
 )
-
-# if config.use_mcp_toolbox:
-#     if not config.mcp_toolbox_uri:
-#         raise ValueError(
-#             "mcp_toolbox_uri must be set when use_mcp_toolbox is set to True.")
-#     toolbox = ToolboxSyncClient(config.mcp_toolbox_uri)
-#     get_unresolved_incidents_tool = toolbox.load_tool('get-unresolved-incidents')
-#     get_expected_number_of_passengers_tool = toolbox.load_tool('get-expected-number-of-passengers')
-#     schedule_maintenance_tool = toolbox.load_tool('schedule-maintenance')

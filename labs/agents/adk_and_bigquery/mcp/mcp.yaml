@@ -5,6 +5,7 @@ sources:
     location: ${BIGQUERY_DATA_LOCATION}
 
 tools:
+  # Specific SQL statement.
   search-bus-stops-by-words-in-description:
     kind: bigquery-sql
     source: bigquery-bus-stop-images
@@ -19,9 +20,34 @@ tools:
         type: string
         description: Words to search for in the description field
 
-  ask_data_insights:
+  # Access to the Conversation Analytics API. Customization options are limited in this version (0.15.0)
+  ask-data-insights:
     kind: bigquery-conversational-analytics
     source: bigquery-bus-stop-images
     description: |
-      Use this tool to perform data analysis, get insights, or answer complex 
-      questions about the contents of specific BigQuery tables.
+      Performs data analysis, gets insights, or answers complex 
+      questions about the bus stop images.
+
+  # Tools to access BigQuery dataset and table metadata
+  get-dataset-information:
+    kind: bigquery-get-dataset-info
+    source: bigquery-bus-stop-images
+    description: Provides dataset information, including permissions.
+
+  list-tables:
+    kind: bigquery-list-table-ids
+    source: bigquery-bus-stop-images
+    description: Provides a list of tables in a dataset.
+
+  get-table-information:
+    kind: bigquery-get-table-info
+    source: bigquery-bus-stop-images
+    description: Provides table schema information.
+
+toolsets:
+  bus-stop-images-toolset:
+    - search-bus-stops-by-words-in-description
+    - ask-data-insights
+    - get-dataset-information
+    - list-tables
+    - get-table-information
