@@ -1,0 +1,27 @@
+sources:
+  bigquery-bus-stop-images:
+    kind: bigquery
+    project: ${BIGQUERY_RUN_PROJECT_ID}
+    location: ${BIGQUERY_DATA_LOCATION}
+
+tools:
+  search-bus-stops-by-words-in-description:
+    kind: bigquery-sql
+    source: bigquery-bus-stop-images
+    description: |
+      Find bus stops by searching for specify terms in the description field
+    statement: |
+      SELECT bus_stop_id, description
+                FROM `${BIGQUERY_DATA_PROJECT_ID}.multimodal.image_reports`
+                WHERE SEARCH(description, @words_to_search)
+    parameters:
+      - name: words_to_search
+        type: string
+        description: Words to search for in the description field
+
+  ask_data_insights:
+    kind: bigquery-conversational-analytics
+    source: bigquery-bus-stop-images
+    description: |
+      Use this tool to perform data analysis, get insights, or answer complex 
+      questions about the contents of specific BigQuery tables.

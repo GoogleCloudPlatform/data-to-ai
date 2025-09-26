@@ -23,7 +23,7 @@ from google.cloud import bigquery
 from google.cloud.bigquery.enums import JobCreationMode
 from google.cloud.bigquery.job import QueryJobConfig
 from pydantic import BaseModel, Field
-from toolbox_core import ToolboxSyncClient
+from google.adk.tools.mcp_tool import McpToolset, StreamableHTTPConnectionParams
 
 bigquery_client = bigquery.Client(
     # This can be useful to reduce response latencies
@@ -32,6 +32,7 @@ bigquery_client = bigquery.Client(
 
 logger = logging.getLogger(__name__)
 
+data_project_id=os.getenv("BIGQUERY_DATA_PROJECT_ID")
 
 class BusStop(BaseModel):
     """
@@ -47,8 +48,6 @@ class BusStop(BaseModel):
 async def get_latest_bus_stop_images() -> List[BusStop]:
     logger.info("Getting the list of bus stops")
     bus_stops = []
-
-    data_project_id=os.getenv("BIGQUERY_DATA_PROJECT_ID")
 
     try:
         rows = bigquery_client.query_and_wait(
@@ -87,7 +86,12 @@ async def get_latest_bus_stop_images() -> List[BusStop]:
         "bus_stops": bus_stops
     }
 
-
+find_bus_stop_tool=McpToolset(
+    connection_params=StreamableHTTPConnectionParams(
+        url="http://127.0.0.1:5000/mcp",
+        headers={"Authorization": "Bearer your-auth-token-in-production"}
+    ),
+)
 
 # if config.use_mcp_toolbox:
 #     if not config.mcp_toolbox_uri:

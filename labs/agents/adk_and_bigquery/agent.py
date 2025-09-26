@@ -22,7 +22,7 @@ from google.adk.models.google_llm import Gemini
 from google.adk.planners import BuiltInPlanner
 from google.genai import types
 from google.genai.types import ThinkingConfig, HttpRetryOptions
-from .tools import get_latest_bus_stop_images
+from .tools import get_latest_bus_stop_images, find_bus_stop_tool, data_project_id
 
 # configure logging __name__
 logger = logging.getLogger(__name__)
@@ -59,11 +59,17 @@ root_agent = Agent(
     ),
     description="Bus stop image analysis agent",
     global_instruction="",
-    instruction="You are a general knowledge agent.",
+    instruction=
+    f"""You can answer questions about bus stop images. You must use the tools provided to answer the questions.
+    
+    If you use the ask_data_insights tool, make sure to provide the table_reference parameter exactly as
+    "[{{"projectId": "{data_project_id}", "datasetId":"multimodal", "tableId": "image_reports"}}]
+    """,
     planner=BuiltInPlanner(
         thinking_config=ThinkingConfig(include_thoughts=True)),
     tools=[
-        get_latest_bus_stop_images
+        get_latest_bus_stop_images,
+        find_bus_stop_tool
     ],
     # after_tool_callback=after_tool,
     # before_model_callback=rate_limit_callback,
