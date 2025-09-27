@@ -70,7 +70,7 @@ async def get_latest_bus_stop_images(number_of_images: int) -> List[BusStop]:
             bus_stops.append(BusStop(
                 bus_stop_id=row.bus_stop_id,
                 image_url=row.image_url.replace("gs://",
-                                                                "https://storage.mtls.cloud.google.com/"),
+                                    "https://storage.mtls.cloud.google.com/"),
                 image_mime_type=row.image_mime_type,
                 cleanliness_level=row.cleanliness_level,
                 safety_level=row.safety_level,
