@@ -115,7 +115,7 @@ You can explore the Tools tab and try out MCP Tools.
 We will let the MCP server run in this Cloud Shell tab.
 
 To run the agent itself, open another tab by clicking on the + icon on at the top of the terminal
-window. You will see a new terminal window. First, let's natigate to the directory with the agent
+window. You will see a new terminal window. First, let's navigate to the directory with the agent
 code.
 
 ```shell
@@ -171,7 +171,7 @@ can do", and explore from there.
   BigQuery is by using tools provided to the agent. You can see how the LLM selects a different tool
   depending on the prompt.
 * Explore the interaction of ADK with the LLM. Click on the agent or function call icons in the UI
-  and see requests and reponses from the LLM.
+  and see requests and responses from the LLM.
 * The model determines the tool to call and, very importantly, the parameters it needs to call the
   tool with. Good tool definitions help avoid model hallucinations and the need to provide verbose
   model instructions.
@@ -199,8 +199,8 @@ can do", and explore from there.
   Shell (you).
   Most likely you have the Owner role on the project if not the entire organization. Some tools,
   like [bigquery-execute-sql](https://googleapis.github.io/genai-toolbox/resources/tools/bigquery/bigquery-execute-sql/)
-  can run any SQL statement, including DELETEs and UPDATES. What would you do to prevent accidental
-  or malicious excution of queries outside of intended set of datasets/tables?
+  can run any SQL statement, including DELETE and UPDATE ones. What would you do to prevent accidental
+  or malicious execution of queries outside of intended set of datasets/tables?
 
 If you change the agent, just cancel the `adk web` process (Ctrl+C) and restart it. You would need to create
 a new session in the UI; sessions are not persisted in this test environment. If you change the MCP
