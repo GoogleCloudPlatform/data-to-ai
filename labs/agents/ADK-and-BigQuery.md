@@ -13,6 +13,63 @@ workflows (sequential, parallel or custom sequencing) and parent/child/sibling a
 compositions, offers session and state management and has a number of other features. The best
 practices and design patterns of creating complex agents is outside the scope of this lab.
 
+## What does the sample agent look like?
+
+There is a quick overview of how an ADK agent you will use in this lab works:
+
+```mermaid
+---
+config:
+  theme: redux
+  look: neo
+  layout: elk
+---
+flowchart TD
+ subgraph s1["ADK Agent"]
+        n4["Built-in Tools"]
+        n10["ADK Runtime"]
+  end
+ subgraph s2["LLM (Gemini)"]
+    direction TB
+        n11["Process request and decide which tool to use"]
+  end
+ subgraph s3["MCP Server"]
+        n7["Direct Access Tools"]
+        n9["Conv. Analytics Tool"]
+  end
+ subgraph s4["Conv. Analytics API"]
+        n8["Custom LLM"]
+  end
+    n5(["Agent UI"]) L_n5_s1_0@-. Which stop should be maintained first? .-> s1
+    s1 L_s1_s3_0@--> s3
+    s2 L_s2_s1_0@-. "Call Conv. Analytics Tool" .-> s1
+    n4 --> n6["BigQuery"]
+    n7 --> n6
+    n9 L_n9_s4_0@--> s4
+    s4 L_s4_n6_0@--> n6
+    n10 L_n10_n4_0@--> n4
+    n10 L_n10_s2_0@-- Prompt + request + list of tools --> s2
+    n12["Text Block"]
+    n4@{ shape: processes}
+    n10@{ shape: proc}
+    n11@{ icon: "gcp:vertexai", pos: "b", h: 140}
+    n7@{ shape: processes}
+    n9@{ shape: proc}
+    n8@{ shape: rounded}
+    n6@{ shape: db}
+    n12@{ shape: text}
+     n5:::Sky
+    classDef Sky stroke-width:1px, stroke-dasharray:none, stroke:#374D7C, fill:#E2EBFF, color:#374D7C
+    linkStyle 0 stroke:#000000,fill:none
+    L_n5_s1_0@{ animation: slow } 
+    L_s1_s3_0@{ animation: slow } 
+    L_s2_s1_0@{ animation: slow } 
+    L_n9_s4_0@{ animation: slow } 
+    L_s4_n6_0@{ animation: slow } 
+    L_n10_n4_0@{ animation: none } 
+    L_n10_s2_0@{ animation: slow }
+```
+
 ## Prerequisites
 
 The lab assumes you ran all the code cells the
