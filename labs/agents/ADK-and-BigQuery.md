@@ -23,6 +23,7 @@ config:
   theme: redux
   layout: dagre
   look: handDrawn
+  fontFamily: fantasy
 ---
 flowchart TD
  subgraph s1["Agent"]
@@ -37,7 +38,9 @@ flowchart TD
         n8["Purpose Built Model"]
   end
  subgraph s4["Vertex AI"]
-        n9["LLM"]
+    direction LR
+        n9["LLM<br>(Gemini)"]
+        n10["Model decides<br>which tool to use<br>and responds to<br>the agent"]
   end
     A(["Agent UI"]) --> s1
     n1 --> n2 & s2 & s4
@@ -45,10 +48,13 @@ flowchart TD
     n4 --> n6
     s3 --> n6
     n5 --> s3
+    n10 -.-> n9
     n2@{ shape: procs}
     n4@{ shape: procs}
     n5@{ shape: proc}
+    n10@{ shape: comment}
     n6@{ shape: db}
+    style n10 color:#2962FF
 
 ```
 
