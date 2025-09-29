@@ -27,7 +27,7 @@ config:
 flowchart TD
  subgraph s1["Agent"]
         n1["Agent Runtime"]
-        n2["Tools"]
+        n2["Direct Access Tools"]
   end
  subgraph s2["MCP Server"]
         n4["Direct Access Tools"]
@@ -49,6 +49,7 @@ flowchart TD
     n4@{ shape: procs}
     n5@{ shape: proc}
     n6@{ shape: db}
+
 ```
 
 ## Prerequisites
