@@ -18,14 +18,11 @@ practices and design patterns of creating complex agents is outside the scope of
 There is a quick overview of how an ADK agent you will use in this lab works:
 
 ```mermaid
-info
-```
-
-```mermaid
 ---
 config:
   theme: redux
   layout: dagre
+  look: handDrawn
 ---
 flowchart TD
  subgraph s1["Agent"]
@@ -36,11 +33,14 @@ flowchart TD
         n4["Direct Access Tools"]
         n5["Conv. Analytics Tool"]
   end
- subgraph s3["Conv Analytics API"]
-        n8["Custom Model"]
+ subgraph s3["Conv. Analytics API"]
+        n8["Purpose Built Model"]
+  end
+ subgraph s4["Vertex AI"]
+        n9["LLM"]
   end
     A(["Agent UI"]) --> s1
-    n1 --> n2 & n3["LLM"] & s2
+    n1 --> n2 & s2 & s4
     n2 --> n6["BigQuery"]
     n4 --> n6
     s3 --> n6
@@ -48,7 +48,6 @@ flowchart TD
     n2@{ shape: procs}
     n4@{ shape: procs}
     n5@{ shape: proc}
-    n3@{ shape: div-proc}
     n6@{ shape: db}
 ```
 
