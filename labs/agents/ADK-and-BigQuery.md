@@ -15,7 +15,7 @@ practices and design patterns of creating complex agents is outside the scope of
 
 ## What does the sample agent look like?
 
-There is a quick overview of how an ADK agent you will use in this lab works:
+There is a quick overview of how the ADK agent you will use in this lab works:
 
 ```mermaid
 ---
