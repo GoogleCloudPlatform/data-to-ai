@@ -101,14 +101,14 @@ use [MCP Toolbox for Database](https://googleapis.github.io/genai-toolbox/gettin
 Switch to the directory which contains the server configuration:
 
 ```shell
-cd data-to-ai/labs/agents/adk_and_bigquery/mcp
+cd ./adk_and_bigquery/mcp
 ```
 
 Download the server:
 
 ```shell
-export VERSION=0.16.0
-curl -O https://storage.googleapis.com/genai-toolbox/v$VERSION/linux/amd64/toolbox
+MCP_TOOLKIT_VERSION=0.16.0
+curl -O https://storage.googleapis.com/genai-toolbox/v${MCP_TOOLKIT_VERSION}/linux/amd64/toolbox
 chmod +x toolbox
 
 ./toolbox --version
@@ -220,9 +220,9 @@ can do", and explore from there.
 * The model determines the tool to call and, very importantly, the parameters it needs to call the
   tool with. Good tool definitions help avoid model hallucinations and the need to provide verbose
   model instructions.
-* LLM response verbiage vary from turn to turn even for the same question and if essentially the
-  same data is returned. For production quality agents additional prompt tuning related to how
-  exactly respond is often required.
+* LLM response verbiage varies from turn to turn even for the same question and if essentially the
+  same data is returned. For production quality agents requiring almost deterministic responses for 
+  specific scenarios additional prompt and response generation parameter tuning is often required.
 * Open the Cloud Shell Editor (button on the top of the window) and browse the source code of the
   MCP server (data-to-ai/labs/agents/adk_and_bigquery/mcp/mcp.yaml) and the ADK agent (
   data-to-ai/labs/agents/adk_and_bigquery/*.py).
@@ -232,6 +232,10 @@ can do", and explore from there.
 
 ## Things to try
 
+* See how to make the agent do more sophisticated reasoning than simply selecting the right
+  tools and displaying responses. See if you can make it prioritize bus stops requiring maintenance
+  based on certain criteria. If the agent doesn't do a good job - try to change the model to a more
+  advanced reasoning model and see if it improves things.
 * Modify some of the tools or change the whole agent to do something completely different. For
   example, point some tools to connect
   to [public BigQuery datasets](https://cloud.google.com/bigquery/public-data).
