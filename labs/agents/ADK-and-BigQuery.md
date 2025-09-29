@@ -18,56 +18,38 @@ practices and design patterns of creating complex agents is outside the scope of
 There is a quick overview of how an ADK agent you will use in this lab works:
 
 ```mermaid
+info
+```
+
+```mermaid
 ---
 config:
   theme: redux
-  look: neo
-  layout: elk
+  layout: dagre
 ---
 flowchart TD
- subgraph s1["ADK Agent"]
-        n4["Built-in Tools"]
-        n10["ADK Runtime"]
+ subgraph s1["Agent"]
+        n1["Agent Runtime"]
+        n2["Tools"]
   end
- subgraph s2["LLM (Gemini)"]
-    direction TB
-        n11["Process request and decide which tool to use"]
+ subgraph s2["MCP Server"]
+        n4["Direct Access Tools"]
+        n5["Conv. Analytics Tool"]
   end
- subgraph s3["MCP Server"]
-        n7["Direct Access Tools"]
-        n9["Conv. Analytics Tool"]
+ subgraph s3["Conv Analytics API"]
+        n8["Custom Model"]
   end
- subgraph s4["Conv. Analytics API"]
-        n8["Custom LLM"]
-  end
-    n5(["Agent UI"]) L_n5_s1_0@-. Which stop should be maintained first? .-> s1
-    s1 L_s1_s3_0@--> s3
-    s2 L_s2_s1_0@-. "Call Conv. Analytics Tool" .-> s1
-    n4 --> n6["BigQuery"]
-    n7 --> n6
-    n9 L_n9_s4_0@--> s4
-    s4 L_s4_n6_0@--> n6
-    n10 L_n10_n4_0@--> n4
-    n10 L_n10_s2_0@-- Prompt + request + list of tools --> s2
-    n12["Text Block"]
-    n4@{ shape: processes}
-    n10@{ shape: proc}
-    n11@{ icon: "gcp:vertexai", pos: "b", h: 140}
-    n7@{ shape: processes}
-    n9@{ shape: proc}
-    n8@{ shape: rounded}
+    A(["Agent UI"]) --> s1
+    n1 --> n2 & n3["LLM"] & s2
+    n2 --> n6["BigQuery"]
+    n4 --> n6
+    s3 --> n6
+    n5 --> s3
+    n2@{ shape: procs}
+    n4@{ shape: procs}
+    n5@{ shape: proc}
+    n3@{ shape: div-proc}
     n6@{ shape: db}
-    n12@{ shape: text}
-     n5:::Sky
-    classDef Sky stroke-width:1px, stroke-dasharray:none, stroke:#374D7C, fill:#E2EBFF, color:#374D7C
-    linkStyle 0 stroke:#000000,fill:none
-    L_n5_s1_0@{ animation: slow } 
-    L_s1_s3_0@{ animation: slow } 
-    L_s2_s1_0@{ animation: slow } 
-    L_n9_s4_0@{ animation: slow } 
-    L_s4_n6_0@{ animation: slow } 
-    L_n10_n4_0@{ animation: none } 
-    L_n10_s2_0@{ animation: slow }
 ```
 
 ## Prerequisites
