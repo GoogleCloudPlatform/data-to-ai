@@ -136,7 +136,9 @@ dataset resides and where the queries will be run. Adjust these variables if thi
 The MCP server has a tool which uses the Conversational Analytics API. Let's enable it:
 
 ```shell
-gcloud services enable --project ${CURRENT_PROJECT} geminidataanalytics.googleapis.com
+gcloud services enable --project ${CURRENT_PROJECT} \
+  geminidataanalytics.googleapis.com \
+  cloudaicompanion.googleapis.com
 ```
 
 Start the MCP server:
