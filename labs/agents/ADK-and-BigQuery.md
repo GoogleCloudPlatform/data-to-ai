@@ -60,7 +60,7 @@ flowchart TD
 
 ## Prerequisites
 
-The lab assumes you ran all the code cells the
+The lab assumes you ran all the code cells in the
 notebook [genai_in_bigquery.ipynb](./../genai_in_bigquery.ipynb).
 The following BigQuery objects should be created:
 
@@ -77,7 +77,7 @@ the tables listed above.
 If you have access to a computer with Python 3.11 and above installed you can run this lab on that
 computer. The rest of the instructions assume that the agent will be run
 in [Cloud Shell](https://cloud.google.com/shell/docs). Note that Cloud Shell sessions close after 40
-minutes of inactivity and capped at 12 hours. If you session times out, you can always restart the
+minutes of inactivity and capped at 12 hours. If your session times out, you can always restart the
 work where you left it.
 
 ### Start the Cloud Shell
@@ -161,7 +161,7 @@ You can explore the Tools tab and try out MCP Tools.
 
 We will let the MCP server run in this Cloud Shell tab.
 
-To run the agent itself, open another tab by clicking on the + icon on at the top of the terminal
+To run the agent itself, open another tab by clicking on the + icon at the top of the terminal
 window. You will see a new terminal window. First, let's navigate to the directory with the agent
 code.
 
@@ -196,7 +196,7 @@ export GOOGLE_CLOUD_PROJECT=${CURRENT_PROJECT}
 ```
 
 The above setup assumes that your current shell's default project is the one where the BigQuery
-dataset resides and where the queries will be run. `GOOGLE_CLOUD_PROJECT` variable is used determine
+dataset resides and where the queries will be run. `GOOGLE_CLOUD_PROJECT` variable is used to determine
 which project will be used by the Vertex AI SDK. Adjust these variables if needed.
 
 ```shell
@@ -246,12 +246,12 @@ can do", and explore from there.
   and try to change the agent to send much more sophisticated instructions when calling the tool
   which uses this API.
 * Try to "break" the agent in order to understand how to tighten the security around the agents.
-  Current agent and the MCP server run with the credentials of the user who started the Cloud
+  The current agent and the MCP server run with the credentials of the user who started the Cloud
   Shell (you).
   Most likely you have the Owner role on the project if not the entire organization. Some tools,
   like [bigquery-execute-sql](https://googleapis.github.io/genai-toolbox/resources/tools/bigquery/bigquery-execute-sql/)
   can run any SQL statement, including DELETE and UPDATE ones. What would you do to prevent accidental
-  or malicious execution of queries outside of intended set of datasets/tables?
+  or malicious execution of queries outside the intended set of datasets/tables?
 
 If you change the agent, just cancel the `adk web` process (Ctrl+C) and restart it. You would need to create
 a new session in the UI; sessions are not persisted in this test environment. If you change the MCP
