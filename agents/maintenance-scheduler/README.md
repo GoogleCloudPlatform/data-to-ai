@@ -49,7 +49,7 @@ The agent has access to the following tools:
 
 1. **Prerequisites:**
    Run the Terraform scripts described in
-   the [Getting Started with the Terraform](https://github.com/GoogleCloudPlatform/data-to-ai/tree/maintenance-scheduler-agent?tab=readme-ov-file#getting-started-with-the-terraform)
+   the [Getting Started with the Terraform](https://github.com/GoogleCloudPlatform/data-to-ai/blob/main/README.md#getting-started-with-the-terraform)
    section of the top level README file.
 
 Make sure to run the scripts that process the test data, e.g. run at least one `upload-batch.sh`
