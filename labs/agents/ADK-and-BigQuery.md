@@ -177,7 +177,7 @@ We used ADK's Python SDK to create the agent.
 python -m venv .venv
 source .venv/bin/activate
 
-pip install --upgrade google-adk
+pip install google-adk==1.15.0
 ```
 
 ### Running the agent locally
