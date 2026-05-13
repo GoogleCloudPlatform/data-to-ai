@@ -3,4 +3,4 @@ repos:
     rev: v1.14.7  # CURRENT_TAG/COMMIT_HASH
     hooks:
     - id: jupytext
-      args: [--sync]
+      args: [--to,py:percent,--opt,comment_magics=false]
