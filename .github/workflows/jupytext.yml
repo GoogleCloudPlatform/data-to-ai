@@ -1,0 +1,49 @@
+name: Check Notebook Synchronization
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+jobs:
+  verify-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11' # Customize to match your target environment
+
+      - name: Install Jupytext
+        run: |
+          python -m pip install --upgrade pip
+          pip install jupytext
+
+      - name: Verify Notebook Synchronization
+        run: |
+          # 1. Check if any notebook files exist to prevent syntax errors
+          count=$(find . -name "*.ipynb" | wc -l)
+          if [ "$count" -eq 0 ]; then
+            echo "No notebooks found to verify."
+            exit 0
+          fi
+      
+          echo "Synchronizing notebooks using Jupytext project configurations..."
+          # Uses the rules defined in pyproject.toml to ensure matching pairs exist
+          jupytext --sync $(find . -name "*.ipynb")
+          
+          # 2. Ensure there are no untracked (newly generated .py files) or modified files
+          # Using porcelain catches both diff changes and newly triggered files that were missing.
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::Jupyter notebooks (.ipynb) and their Python pairs (.py) are out of sync or missing!"
+            echo "Differences detected:"
+            git status --short
+            git diff
+            echo ""
+            echo "Fix: Please run 'jupytext --sync' locally on your machine, stage the updated files, and push again."
+            exit 1
+          else
+            echo "Success: All Jupyter notebooks are perfectly synchronized with their Python script representations."
+          fi

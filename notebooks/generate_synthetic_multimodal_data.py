@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.19.2
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: Python 3
 #     name: python3
@@ -50,10 +50,10 @@ BQ_TABLE = 'staging_ntd_stops'
 
 STOP_FILE_URI = 'gs://bus-stops-open-access/loader-data/NTAD_National_Transit_Map_Stops_6633473857343365838.csv' # @param {type:"string"}
 
-# %% id="DovMHNxlb2yq"
+# %%
 from google.cloud import bigquery
 from google.cloud.bigquery import SchemaField
-
+# Test Change
 # 1. load ntd stop data
 
 ntd_stops_schema = [
