@@ -1,6 +1,9 @@
 repos:
--   repo: https://github.com/mwouts/jupytext
-    rev: v1.14.7  # CURRENT_TAG/COMMIT_HASH
+  - repo: local
     hooks:
-    - id: jupytext
-      args: [--to,py:percent,--opt,comment_magics=false]
+      - id: jupytext
+        name: jupytext
+        entry: jupytext
+        language: system
+        args: [--to,py:percent,--opt,comment_magics=false]
+        files: \.(ipynb|py)$
