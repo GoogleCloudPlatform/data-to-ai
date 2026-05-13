@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: jupytext
+        name: jupytext
+        entry: jupytext
+        language: system
+        args: [--to,py:percent,--opt,comment_magics=false]
+        files: \.(ipynb|py)$

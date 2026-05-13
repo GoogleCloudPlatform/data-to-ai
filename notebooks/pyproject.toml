@@ -1,0 +1,26 @@
+[project]
+name = "data-to-ai-notebooks"
+version = "0.1.0"
+description = "Notebooks for the Data-to-AI solution."
+authors = [{ name = "Sergei Lilichenko", email = "slilichenko@google.com" }]
+license = "Apache License 2.0"
+readme = "README.md"
+requires-python = "^3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "jupytext (>=1.19.2,<2.0.0)",
+    "pre-commit (>=4.6.0,<5.0.0)"
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
+
+[tool.jupytext]
+formats = "ipynb,py:percent"
+comment_magics = false
