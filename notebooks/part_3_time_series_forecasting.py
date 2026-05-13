@@ -1,12 +1,13 @@
 # ---
 # jupyter:
 #   jupytext:
+#     comment_magics: false
 #     formats: ipynb,py:percent
 #     text_representation:
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.19.2
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -101,24 +102,24 @@ PROJECT_ID = "" # @param {type:"string"}
 REGION = "us-central1" # @param {type:"string"}
 
 if PROJECT_ID == "":
-  # PROJECT_ID = !gcloud config get-value project
+  PROJECT_ID = !gcloud config get-value project
   PROJECT_ID = PROJECT_ID[0]
 
 # %% [markdown] id="HjmqxYLZgs5_"
 # ### Enable necessary APIs
 
 # %% id="T5kAeQ5vgvs0"
-# !gcloud services enable --project {PROJECT_ID} \
-#   bigquery.googleapis.com \
-#   aiplatform.googleapis.com
+!gcloud services enable --project {PROJECT_ID} \
+  bigquery.googleapis.com \
+  aiplatform.googleapis.com
 
 # %% [markdown] id="mm46iiNJg-Oj"
 # ### Install packages
 
 # %% id="PWQI4caghEpz"
-# %pip install --upgrade --user --quiet \
-#     google-cloud-aiplatform \
-#     google-cloud-bigquery
+%pip install --upgrade --user --quiet \
+    google-cloud-aiplatform \
+    google-cloud-bigquery
 
 # %% [markdown] id="7yLx_qY8ZHG3"
 # ### Create visualization helper functions
@@ -207,7 +208,7 @@ def plot_historical_and_forecast(title,
 # Let's create a BigQuery dataset which will contain several tables with data extracted from the WeatherNext dataset and a view to simplify queries.
 
 # %% id="86b8mZGy-FE0"
-# %%bigquery --project {PROJECT_ID}
+%%bigquery --project {PROJECT_ID}
 
 DECLARE latest_init_time TIMESTAMP;
 DECLARE partition_metadata STRUCT<id STRING, year STRING, month STRING, day STRING>;
@@ -250,13 +251,13 @@ CREATE OR REPLACE VIEW `weathernext_derived.latest_forecast` AS
 # Here's the definition of the latest_forecast_view:
 
 # %% id="wtQXaCTzBcvY"
-# !bq show --format=prettyjson '{PROJECT_ID}:weathernext_derived.latest_forecast'
+!bq show --format=prettyjson '{PROJECT_ID}:weathernext_derived.latest_forecast'
 
 # %% [markdown] id="V7IgYVVbGxlo"
 # Now, we will extract the historic forecasts for the time period for which we plan to train some models. We are going to use two weather data points, temperature and precipitation, to do the forecasting. Note: we only use previous month's data to train the models. Using longer, or different, time periods might result in more accurate forecasting.
 
 # %% id="WlP9NFkkHZe3"
-# %%bigquery --project {PROJECT_ID}
+%%bigquery --project {PROJECT_ID}
 
 DECLARE historic_data_start_time DEFAULT TIMESTAMP_SUB(CURRENT_TIMESTAMP, INTERVAL 31 DAY);
 DECLARE historic_data_end_time DEFAULT CURRENT_TIMESTAMP;
@@ -316,7 +317,7 @@ SELECT
 # We now have the dataset of pretty accurate weather forecasts for a given area, spaced by 6 hours:
 
 # %% id="HCGPs2ZbJ8lU"
-# %%bigquery historical_forecast --project {PROJECT_ID}
+%%bigquery historical_forecast --project {PROJECT_ID}
 
 SELECT geography, forecast.forecast_time, forecast.total_precipitation_6hr, forecast.`2m_temperature`, forecast.`prev_2m_temperature`
   FROM weathernext_derived.historical_local_forecast
@@ -334,14 +335,14 @@ display(historical_forecast)
 # If your bus stop data resides in the "US" BigQuery location then there is no need to do anything because the weather and the bus stop data are co-located and can be joined in the same query. Otherwise you will need to copy the extracted weather data. You can do that by using [cross-regional table copy](https://cloud.google.com/bigquery/docs/managing-tables#copy_tables_across_regions) capabilities of BigQuery.
 
 # %% id="0VjEdNVGGJ9d"
-# %%bigquery --project {PROJECT_ID} --location {REGION}
+%%bigquery --project {PROJECT_ID} --location {REGION}
 
 CREATE SCHEMA IF NOT EXISTS multimodal;
 
 DROP TABLE IF EXISTS multimodal.historical_local_forecast;
 
 # %% id="y2XwaNPOFUqd"
-# ! bq cp -f -n '{PROJECT_ID}:weathernext_derived.historical_local_forecast' '{PROJECT_ID}:multimodal.historical_local_forecast'
+! bq cp -f -n '{PROJECT_ID}:weathernext_derived.historical_local_forecast' '{PROJECT_ID}:multimodal.historical_local_forecast'
 
 # %% [markdown] id="4ZeA3dCQPpVE"
 # # Generate ridership data
@@ -352,7 +353,7 @@ DROP TABLE IF EXISTS multimodal.historical_local_forecast;
 # ### Create ridership table
 
 # %% id="9H2YWpgnUCRw"
-# %%bigquery
+%%bigquery
 
 DROP TABLE IF EXISTS `multimodal.ridership`;
 
@@ -373,7 +374,7 @@ CREATE TABLE `multimodal.ridership`
 # We will use this function for generation of the synthetic data and for actual forecasting:
 
 # %% id="LboBZR0t3t3M"
-# %%bigquery --project {PROJECT_ID}
+%%bigquery --project {PROJECT_ID}
 
 -- Approximate temperature. That assumes the previous temperature was forecast 6 hours ago.
 CREATE OR REPLACE FUNCTION multimodal.temperature_approx(
@@ -395,7 +396,7 @@ CREATE OR REPLACE FUNCTION multimodal.temperature_approx(
 # We also will create a table with a couple of fictitious bus stops - their ids, locations, and some meta data.
 
 # %% id="VbnrddOPBicD"
-# %%bigquery --project {PROJECT_ID}
+%%bigquery --project {PROJECT_ID}
 
 -- Two bus stops in New York, NY, USA
 DECLARE bus_stop_location_1 DEFAULT ST_GEOGPOINT(-73.98886258282087, 40.745073789633736);
@@ -412,7 +413,7 @@ SELECT bus_stop_id, location, base_number_of_riders, busy_in_morning, busy_in_ev
 # Now, let's generate the ridership data:
 
 # %% id="IouW45IIQvmm"
-# %%bigquery --project {PROJECT_ID}
+%%bigquery --project {PROJECT_ID}
 
 DECLARE time_zone DEFAULT "America/New_York";
 
@@ -525,7 +526,7 @@ events_and_weather AS (
 # Let's take a look at the last 20 days of generated data. The first bus stop graph also shows the temperature and percipitation values. You should see some drop in ridership when preciptation increases or temperature is outside of the "comfortable" zone defined in the `generate_number_of_riders` function.
 
 # %% id="9CtOQ1mBZR3M"
-# %%bigquery ridership_history
+%%bigquery ridership_history
 
 SELECT bus_stop_id, event_ts, num_riders, temperature, total_precipitation_6hr
   FROM `multimodal.ridership`
@@ -570,7 +571,7 @@ for bus_stop_id in bus_stop_list:
 # Here's how to forecast the ridership for our bus stops:
 
 # %% id="ECK9eNkTSYLY"
-# %%bigquery ridership_forecast --project {PROJECT_ID} --location {REGION}
+%%bigquery ridership_forecast --project {PROJECT_ID} --location {REGION}
 DECLARE five_days_from_now DEFAULT TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 5 DAY);
 
 EXECUTE IMMEDIATE FORMAT("""
@@ -630,7 +631,7 @@ for bus_stop_id in bus_stop_list:
 # It also has the `time_series_id_col` option. This option identifies the column which will identify a unique time-series within the trained data. In our case, after the training is done there will be two separate models - one for "stop1" and another for "stop2". There can be hundreds of thousands of time-series models created using a single CREATE MODEL statement.
 
 # %% id="xiriX7sZY_5p"
-# %%bigquery --project {PROJECT_ID}
+%%bigquery --project {PROJECT_ID}
 
 CREATE OR REPLACE MODEL `multimodal.ridership_arima_plus`
 OPTIONS(
@@ -652,7 +653,7 @@ FROM `multimodal.ridership`;
 # Let's forecast using this model. This is done by calling the table-valued-function (TVF) ML.FORECAST with a reference to the model trained in the prevous step. There is no additional data needed to forecast. The second parameter to the function affects how many data points since the last model training period is to produce ("horizon") and the level of confidence in the forecast values. For details, refer to the [ML.FORECAST documentation](https://cloud.google.com/bigquery/docs/reference/standard-sql/bigqueryml-syntax-forecast).
 
 # %% id="oGJFowYfa2V8"
-# %%bigquery arima_plus_forecast --project {PROJECT_ID}
+%%bigquery arima_plus_forecast --project {PROJECT_ID}
 
 SELECT
   *
@@ -705,7 +706,7 @@ for bus_stop_id in bus_stop_list:
 # For details on the additional options, explanation of the training process, and best practices when training and using the model please refer to BigQuery documentation on [the CREATE MODEL statement for ARIMA_PLUS_XREG models](https://cloud.google.com/bigquery/docs/reference/standard-sql/bigqueryml-syntax-create-multivariate-time-series).
 
 # %% id="xM1y3GXljNwn"
-# %%bigquery
+%%bigquery
 
 CREATE OR REPLACE MODEL `multimodal.ridership_arima_plus_xreg`
 OPTIONS(
@@ -737,7 +738,7 @@ FROM `multimodal.ridership`;
 # We have already prepared the historical data forecast. Now we are going to get the latest, most accurate, forecast extracted into a separate table.
 
 # %% id="ag1RJVO9N8Id"
-# %%bigquery --project {PROJECT_ID}
+%%bigquery --project {PROJECT_ID}
 
 -- We are going to use the same geo area as the one that we used for historical data generation
 
@@ -773,7 +774,7 @@ CREATE TABLE weathernext_derived.latest_local_forecast AS (
 # Let's see what's in that table:
 
 # %% id="ROyUVU_dyqPx"
-# %%bigquery local_forecast --project {PROJECT_ID}
+%%bigquery local_forecast --project {PROJECT_ID}
 
 SELECT geography, forecast.time, forecast.total_precipitation_6hr, forecast.`2m_temperature`, forecast.`prev_2m_temperature`
   FROM weathernext_derived.latest_local_forecast
@@ -787,12 +788,12 @@ display(local_forecast)
 # Let's move the latest forecast data to the location of the model:
 
 # %% id="-8L08fxQK9Rk"
-# %%bigquery --project {PROJECT_ID}
+%%bigquery --project {PROJECT_ID}
 
 DROP TABLE IF EXISTS multimodal.latest_local_forecast;
 
 # %% id="yGb6uc-B06-b"
-# ! bq cp -f -n '{PROJECT_ID}:weathernext_derived.latest_local_forecast' '{PROJECT_ID}:multimodal.latest_local_forecast'
+! bq cp -f -n '{PROJECT_ID}:weathernext_derived.latest_local_forecast' '{PROJECT_ID}:multimodal.latest_local_forecast'
 
 # %% [markdown] id="RhQ_QkGxNjbg"
 # #### Run the time-series forecast
@@ -805,7 +806,7 @@ DROP TABLE IF EXISTS multimodal.latest_local_forecast;
 #
 
 # %% id="ekoHAClRID0o"
-# %%bigquery expected_features --project {PROJECT_ID}
+%%bigquery expected_features --project {PROJECT_ID}
 
 DECLARE time_zone DEFAULT "America/New_York";
 
@@ -859,7 +860,7 @@ display(expected_features)
 # Let's run the forecast. We will use most of the feature preparation SQL in the forecasting function. Alternatively, we could have prepared the features and saved them in a table and used the whole table as the feature input to the forecast function.
 
 # %% id="KcS2GPMqktw5"
-# %%bigquery ridership_forecast --location {REGION}
+%%bigquery ridership_forecast --location {REGION}
 
 DECLARE time_zone DEFAULT "America/New_York";
 
@@ -949,7 +950,7 @@ for bus_stop_id in bus_stop_list:
 # Model evaluation should be part of the model selection process. You can't evaluate TimesFM model because it's a prebuilt model. But you evaluate the two variations of ARIMA_PLUS models using the ML.ARIMA_EVALUATE function.
 
 # %% id="AqfIvpT5Ps4E"
-# %%bigquery arima_plus_model_evaluation --project {PROJECT_ID}
+%%bigquery arima_plus_model_evaluation --project {PROJECT_ID}
 
 SELECT
   *
@@ -969,7 +970,7 @@ display_columns_as_rows(arima_plus_model_evaluation)
 # To evaluate the forecast for TimesFM model, use the [AI.EVALUATE](https://docs.cloud.google.com/bigquery/docs/reference/standard-sql/bigqueryml-syntax-ai-evaluate) function:
 
 # %% id="eRFz_LlsdBBJ"
-# %%bigquery timesfm_forecast_explanation --project {PROJECT_ID} --location {REGION}
+%%bigquery timesfm_forecast_explanation --project {PROJECT_ID} --location {REGION}
 
 DECLARE eval_cutoff DEFAULT TIMESTAMP_SUB(CURRENT_TIMESTAMP, INTERVAL 7 DAY);
 
@@ -998,7 +999,7 @@ display_columns_as_rows(timesfm_forecast_explanation)
 # To evaluate the forecast for ARIMA_PLUS models, use the same parameters as use for ML.FORECAST function to call ML.EXPLAIN_FORECAST:
 
 # %% id="vUCLXzghQd3A"
-# %%bigquery arima_plus_forecast_explanation --project {PROJECT_ID}
+%%bigquery arima_plus_forecast_explanation --project {PROJECT_ID}
 
 SELECT *
  FROM ML.EXPLAIN_FORECAST(

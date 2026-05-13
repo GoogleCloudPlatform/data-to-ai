@@ -1,12 +1,13 @@
 # ---
 # jupyter:
 #   jupytext:
+#     comment_magics: false
 #     formats: ipynb,py:percent
 #     text_representation:
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.19.2
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: Python 3
 #     name: python3
@@ -92,7 +93,7 @@ REGION = "us-central1" # @param {type:"string"}
 
 # in-case someone didn't update the project manually, assume current project is the right one
 if PROJECT_ID == "your project ID here":
-    # PROJECT_ID = !gcloud config get-value project
+    PROJECT_ID = !gcloud config get-value project
     PROJECT_ID = PROJECT_ID[0]
 
 BUCKET_NAME = f"{PROJECT_ID}-multimodal"  # Bucket created in subsequent step
@@ -102,18 +103,18 @@ USER_AGENT = "cloud-solutions/data-to-ai-nb-v2"
 # ### Enable necessary APIs
 
 # %% id="6TbhvAsmcryM"
-# !gcloud services enable --project {PROJECT_ID} \
-#   bigqueryconnection.googleapis.com \
-#   bigquerystorage.googleapis.com \
-#   aiplatform.googleapis.com
+!gcloud services enable --project {PROJECT_ID} \
+  bigqueryconnection.googleapis.com \
+  bigquerystorage.googleapis.com \
+  aiplatform.googleapis.com
 
 # %% [markdown] id="V-dWtX02amkF"
 # ### Install packages
 
 # %% id="LLykEjyKZpS6"
-# %pip install --upgrade --user --quiet \
-#     google-cloud-aiplatform \
-#     google-cloud-bigquery
+%pip install --upgrade --user --quiet \
+    google-cloud-aiplatform \
+    google-cloud-bigquery
 
 # %% [markdown] id="ts9j-TgQaMM8"
 # ### Import libraries
@@ -269,7 +270,7 @@ TARGET_PATH = f"gs://{BUCKET_NAME}/target"
 # Copy the sample images to your bucket:
 
 # %% id="wfLjOuGXcryM"
-# !gcloud storage cp "gs://data-to-ai-01-multimodal/sources/*" {SOURCE_PATH}
+!gcloud storage cp "gs://data-to-ai-01-multimodal/sources/*" {SOURCE_PATH}
 
 # %% [markdown] id="SK-wcSu3O_QE"
 # ## Set up BigQuery resources
@@ -281,12 +282,12 @@ TARGET_PATH = f"gs://{BUCKET_NAME}/target"
 # Create a Cloud Resource connection:
 
 # %% id="ScB5qNcxcryM"
-# !bq mk \
-# --connection \
-# --location={REGION} \
-# --project_id={PROJECT_ID} \
-# --connection_type=CLOUD_RESOURCE \
-# multimodal
+!bq mk \
+--connection \
+--location={REGION} \
+--project_id={PROJECT_ID} \
+--connection_type=CLOUD_RESOURCE \
+multimodal
 
 # %% [markdown] id="6Zi-zSPs4UDY"
 # ### Grant necessary IAM permissions
@@ -296,7 +297,7 @@ TARGET_PATH = f"gs://{BUCKET_NAME}/target"
 
 # %% id="G0SBVaC0UtMh"
 import json
-# connection_details_json_str = !bq show --format json --connection {PROJECT_ID}.{REGION}.multimodal
+connection_details_json_str = !bq show --format json --connection {PROJECT_ID}.{REGION}.multimodal
 connection_details_dict = json.loads(connection_details_json_str[0])
 CONNECTION_SA_ID = connection_details_dict["cloudResource"]["serviceAccountId"]
 if not CONNECTION_SA_ID:
@@ -306,7 +307,7 @@ if not CONNECTION_SA_ID:
     # if this still fails, we'll throw an exception
     import time
     time.sleep(10)
-    # connection_details_json_str = !bq show --format json --connection {PROJECT_ID}.{REGION}.multimodal
+    connection_details_json_str = !bq show --format json --connection {PROJECT_ID}.{REGION}.multimodal
     connection_details_dict = json.loads(connection_details_json_str[0])
     CONNECTION_SA_ID = connection_details_dict["cloudResource"]["serviceAccountId"]
 if not CONNECTION_SA_ID:
@@ -316,18 +317,18 @@ if not CONNECTION_SA_ID:
 # Grant the connection service account Vertex AI User role:
 
 # %% id="c2seMlNMUtMh"
-# !gcloud projects add-iam-policy-binding {PROJECT_ID} \
-#   --member='serviceAccount:{CONNECTION_SA_ID}' \
-#   --role='roles/aiplatform.user' --condition=None \
-#   --no-user-output-enabled
+!gcloud projects add-iam-policy-binding {PROJECT_ID} \
+  --member='serviceAccount:{CONNECTION_SA_ID}' \
+  --role='roles/aiplatform.user' --condition=None \
+  --no-user-output-enabled
 
 # %% [markdown] id="7W666UoT2zGJ"
 # Grant the connection service account Cloud Storage Object viewer role on the bucket
 
 # %% id="1kOuJM-T2y2l"
-# !gcloud storage buckets add-iam-policy-binding 'gs://{BUCKET_NAME}' \
-#     --member='serviceAccount:{CONNECTION_SA_ID}' \
-#     --role=roles/storage.objectViewer
+!gcloud storage buckets add-iam-policy-binding 'gs://{BUCKET_NAME}' \
+    --member='serviceAccount:{CONNECTION_SA_ID}' \
+    --role=roles/storage.objectViewer
 
 
 # %% [markdown] id="l8Xc-oiSx-OP"
@@ -337,7 +338,7 @@ if not CONNECTION_SA_ID:
 # Create your BigQuery dataset
 
 # %% id="sIyCa5XykApO"
-# !bq mk --location={REGION} --dataset {PROJECT_ID}:multimodal
+!bq mk --location={REGION} --dataset {PROJECT_ID}:multimodal
 
 # %% [markdown] id="cj2VzliscryM"
 # Create the objects table connected to the Cloud Storage bucket:
@@ -358,7 +359,7 @@ query_job.result() # Wait for the job to complete.
 # Create the BigQuery tables that we'll use in the demo:
 
 # %% id="otc0QR9lf4-K"
-# %%bigquery
+%%bigquery
 CREATE OR REPLACE TABLE `multimodal.image_reports` (
   report_id STRING,
   uri STRING,
@@ -462,7 +463,7 @@ upload_batch(
 # Let's see the contents of the object table that is linked to the bucket. You see the list of pictures as well as the bus stop IDs, which are stored as object metadata:
 
 # %% id="iK6a6aZA6IqV"
-# %%bigquery objects_df
+%%bigquery objects_df
 SELECT * FROM `multimodal.objects`
 ORDER BY updated;
 
@@ -476,7 +477,7 @@ objects_df[['uri', 'metadata']]
 # Let's preview the images in this first batch. We'll use the corresponding Cloud Storage authenticated urls, then render them in the dataframe table. Note only users who are granted access to view the bucket objects, can access these images.
 
 # %% id="aXwWXXGa8M8R"
-# %%bigquery batch1_df
+%%bigquery batch1_df
 SELECT
   uri, updated,
   CONCAT("https://storage.mtls.cloud.google.com/", SPLIT(uri, "gs://")[OFFSET(1)]) AS url,
@@ -564,7 +565,7 @@ query_job.result()  # Wait for the job to complete.
 # Now let's look at the results in the reports table:
 
 # %% id="nEHklYMvcryR"
-# %%bigquery
+%%bigquery
 SELECT * FROM `multimodal.image_reports`;
 
 # %% [markdown] id="ikBxFS5kcryR"
@@ -891,7 +892,7 @@ sns.countplot(x="resolved", data=incidents_df)
 # Let's generate embeddings for all reports, specifically using the textual description field, so we can do semantic search
 
 # %% id="miI0cjMX26Xk"
-# %%bigquery
+%%bigquery
 CREATE OR REPLACE TABLE `multimodal.image_reports_vector_db` AS (
 SELECT
   report_id, uri, bus_stop_id, content as description,
@@ -913,7 +914,7 @@ FROM
 # The next query will most likely fail because the vector index need a certain number of rows to be created. But the following queries will function correctly even if the index is not created, and you can always create the index later to improve the performance of the vector searches. This capability will be demonstrated in the next notebook, titled CleanSight (Part 2).
 
 # %% id="3hEKoTOCp8bI"
-# %%bigquery
+%%bigquery
 CREATE VECTOR INDEX index_ivf ON `multimodal.image_reports_vector_db`(embedding)
 STORING (report_id, uri, bus_stop_id, description, cleanliness_level, safety_level)
 OPTIONS (index_type = 'IVF', distance_type = 'COSINE')

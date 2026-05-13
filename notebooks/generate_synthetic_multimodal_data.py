@@ -1,6 +1,7 @@
 # ---
 # jupyter:
 #   jupytext:
+#     comment_magics: false
 #     formats: ipynb,py:percent
 #     text_representation:
 #       extension: .py
@@ -250,8 +251,8 @@ DEFAULT_RANGE = 100 # used to determine % of prompts
 # This process also makes use of object tables; you can either create a new connection, or re-use the existing connection that you already have from the CleanSight application.
 
 # %% id="-vDagGzKc0Ay"
-# !bq mk --connection --location=$LOCATION \
-#     --connection_type=CLOUD_RESOURCE gcs_stop_images_cxn
+!bq mk --connection --location=$LOCATION \
+    --connection_type=CLOUD_RESOURCE gcs_stop_images_cxn
 
 # %% id="hWKaNL2FdK4z"
 from google.cloud import bigquery
@@ -306,7 +307,7 @@ if DEMO_MODE:
 print(len(source_images))
 
 # %% id="f8I4_O40dkpu"
-# %%bigquery
+%%bigquery
 
 LOAD DATA OVERWRITE `bus_d2ai.bus_stop_image_mappings`
 FROM FILES (

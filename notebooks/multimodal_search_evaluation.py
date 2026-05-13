@@ -1,12 +1,13 @@
 # ---
 # jupyter:
 #   jupytext:
+#     comment_magics: false
 #     formats: ipynb,py:percent
 #     text_representation:
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.19.2
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: Python 3
 #     name: python3
@@ -110,10 +111,10 @@ IMAGE_PATH = f"gs://{BUCKET_NAME}/target" # Path of pre-processed images
 # ### Install packages
 
 # %% id="Q1eNnfaqZTNd"
-# %pip install --upgrade --user --quiet \
-#     google-cloud-aiplatform \
-#     google-cloud-bigquery \
-#     deepeval
+%pip install --upgrade --user --quiet \
+    google-cloud-aiplatform \
+    google-cloud-bigquery \
+    deepeval
 
 # %% [markdown] id="eUHDKyrvZbfY"
 # ### Import libraries
@@ -159,14 +160,14 @@ def preview_image(uri):
 # If you've completed part 1, there should be 70+ pre-processed images and corresponding vector embeddings in BigQuery. It's a small dataset, but sufficient to run some searches and evaluate initial search quality.
 
 # %% id="bIw82qhuHWy0"
-# %%bigquery image_reports_df
+%%bigquery image_reports_df
 SELECT * FROM `multimodal.image_reports`
 
 # %% id="cNWTTydb7jkl"
 len(image_reports_df)
 
 # %% id="DTDpz3Rx7El4"
-# %%bigquery image_embeddings_df
+%%bigquery image_embeddings_df
 SELECT * FROM `multimodal.image_reports_vector_db`
 
 # %% id="POm3f4NLidsJ"

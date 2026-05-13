@@ -1,12 +1,13 @@
 # ---
 # jupyter:
 #   jupytext:
+#     comment_magics: false
 #     formats: ipynb,py:percent
 #     text_representation:
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.19.2
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: Python 3
 #     name: python3
@@ -71,7 +72,7 @@
 # If you have not already, run the Part 1 notebook which will set up some required infrastructure and resources. Where possible, the same buckets, connections, and other resources are re-used from the Part 1 notebook.
 
 # %% id="h_KvYlGg5DzS"
-# %pip install --upgrade --user google-cloud-aiplatform
+%pip install --upgrade --user google-cloud-aiplatform
 
 # %% id="ZJl4dZ6FurrZ"
 from IPython.display import HTML, display
@@ -82,7 +83,7 @@ REGION = "us-central1" # @param {type:"string"}
 BQ_DATASET = "multimodal"
 
 if PROJECT_ID == "<your project>":
-  # PROJECT_ID = !gcloud config get-value project
+  PROJECT_ID = !gcloud config get-value project
   PROJECT_ID = PROJECT_ID[0]
 
 BUCKET_NAME = f"{PROJECT_ID}-multimodal"
@@ -107,13 +108,13 @@ def preview_image(url):
 # This step will copy over 5,000 bus stop images into your bucket, and will take 3-5 minutes. This is a collection of synthetic images based on real bus stop photos. They have been edited in an automated process using Gemini and Imagen to produce our example dataset.
 
 # %% id="IgrqaYJZuWV4"
-# !gcloud storage cp -r gs://bus-stops-open-access/edited-images/* {TARGET_PATH}
+!gcloud storage cp -r gs://bus-stops-open-access/edited-images/* {TARGET_PATH}
 
 # %% [markdown] id="L299q0U_a-uj"
 # Additionally, we want to analyze and store a few additional details about each bus stop for future search and analysis, and so we'll extend the `image_reports` table.
 
 # %% id="vithtzMiaHF6"
-# %%bigquery
+%%bigquery
 
 ALTER TABLE `multimodal.image_reports` ADD COLUMN cleanliness_description STRING;
 ALTER TABLE `multimodal.image_reports` ADD COLUMN safety_description STRING;
@@ -226,7 +227,7 @@ for i, image in enumerate(rows):
 # A new table in this notebook, `bus_stops`, represents the physical bus stop with an address and a geographic location. Each record in `image_reports` is associated with a `bus_stop`.
 
 # %% id="qH-R3dQZsA-5"
-# %%bigquery
+%%bigquery
 
 LOAD DATA OVERWRITE `multimodal.bus_stops`
 FROM FILES (
@@ -257,7 +258,7 @@ SELECT count(*) from `multimodal.image_reports`;
 # This step will take approximately 60 seconds to complete on our 5,000+ image table.
 
 # %% id="WmSq3RJWvjY7"
-# %%bigquery
+%%bigquery
 CREATE OR REPLACE TABLE `multimodal.image_reports_vector_db` AS (
 SELECT
   report_id, uri, bus_stop_id, content as description,
@@ -273,7 +274,7 @@ FROM
 );
 
 # %% id="twwzEWDRvW7Q"
-# %%bigquery
+%%bigquery
 
 CREATE VECTOR INDEX reports_text_index ON `multimodal.image_reports_vector_db`(embedding)
 STORING (report_id, uri, bus_stop_id, description, cleanliness_level, safety_level)
@@ -287,7 +288,7 @@ OPTIONS (index_type = 'IVF', distance_type = 'COSINE')
 # Let's do this, and then we can compare and contrast searches between the two approaches.
 
 # %% id="bEwpUdbG149k"
-# %%bigquery
+%%bigquery
 
 CREATE OR REPLACE MODEL `multimodal.mm_embedding_model`
 REMOTE WITH CONNECTION `us-central1.multimodal`
@@ -299,7 +300,7 @@ OPTIONS ( endpoint = 'multimodalembedding@001')
 # If you want to see it run for yourself, remove the `LIMIT` and run it. Otherwise, run this cell as-is and proceed to the next cell to load a pre-made table.
 
 # %% id="KgpdTFQN4zJz"
-# %%bigquery
+%%bigquery
 
 CREATE OR REPLACE TABLE `multimodal.image_reports_vector_mm_db` AS
 SELECT * FROM
@@ -310,7 +311,7 @@ SELECT * FROM
   )
 
 # %% id="E0UbdNaT_mZe"
-# %%bigquery
+%%bigquery
 
 LOAD DATA OVERWRITE `multimodal.image_reports_vector_mm_db`
 FROM FILES (
@@ -348,7 +349,7 @@ OPTIONS (index_type = 'IVF', distance_type = 'COSINE');
 # As an example of this, the query below searches for all bus stops that display an advertisement for Burger King. The marketer can then check these timestamped images against their ad buys to verify that the ad was in service during the contracted period.
 
 # %% id="fRMG7LiXFAvn"
-# %%bigquery df1
+%%bigquery df1
 
 SELECT
   base.updated,
@@ -383,7 +384,7 @@ HTML(df1[['updated', 'image']].to_html(escape=False))
 #
 
 # %% id="G3KHDdVTryB-"
-# %%bigquery df2
+%%bigquery df2
 
 SELECT
   base.updated,
@@ -420,13 +421,13 @@ HTML(df2[['updated', 'image']].to_html(escape=False))
 # For the next section, we'll be using a historic storms dataset from NOAA that is available in the BigQuery public datasets program. In order to proceed, let's copy that table into our local BigQuery dataset.
 
 # %% id="MW5ExsabIbVR"
-# !bq cp -f -n bigquery-public-data:noaa_historic_severe_storms.storms_2024 $PROJECT_ID:multimodal.storms
+!bq cp -f -n bigquery-public-data:noaa_historic_severe_storms.storms_2024 $PROJECT_ID:multimodal.storms
 
 # %% [markdown] id="io6hFoxAfv-1"
 # Let's first do some exploration. Run the following query to see which bus stops have been most affected by severe weather events in the past year.
 
 # %% id="ioftsms0fvkm"
-# %%bigquery
+%%bigquery
 
 SELECT
   bus_stop_id,
@@ -451,7 +452,7 @@ order by occurrences desc
 # The following is an example query that combines the vector search and the spatio-temporal join against historical weather events; you can play around with this query and modify for your own use case.
 
 # %% id="Obqfb7C5gezO"
-# %%bigquery df3
+%%bigquery df3
 
 WITH severe_weather_reports AS (
   SELECT
