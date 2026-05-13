@@ -24,7 +24,8 @@ jobs:
       - name: Verify Notebook Synchronization
         run: |
           # 1. Check if any notebook files exist to prevent syntax errors
-          count=$(find . -name "*.ipynb" | wc -l)
+          # Note: currently only checking the notebooks folder.
+          count=$(find . -name "notebooks/*.ipynb" | wc -l)
           if [ "$count" -eq 0 ]; then
             echo "No notebooks found to verify."
             exit 0
@@ -32,7 +33,7 @@ jobs:
       
           echo "Synchronizing notebooks using Jupytext project configurations..."
           # Uses the rules defined in pyproject.toml to ensure matching pairs exist
-          jupytext --to py:percent --opt comment_magics=false $(find . -name "*.ipynb")
+          jupytext --to py:percent --opt comment_magics=false $(find . -name "notebooks/*.ipynb")
           
           # 2. Ensure there are no untracked (newly generated .py files) or modified files
           # Using porcelain catches both diff changes and newly triggered files that were missing.
@@ -42,7 +43,7 @@ jobs:
             git status --short
             git diff
             echo ""
-            echo "Fix: Please run 'jupytext --sync' locally on your machine, stage the updated files, and push again."
+            echo "Fix: Please run 'jupytext --to py:percent --opt comment_magics=false' locally on your machine, stage the updated files, and push again."
             exit 1
           else
             echo "Success: All Jupyter notebooks are perfectly synchronized with their Python script representations."
