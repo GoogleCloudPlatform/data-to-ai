@@ -53,7 +53,7 @@ STOP_FILE_URI = 'gs://bus-stops-open-access/loader-data/NTAD_National_Transit_Ma
 # %%
 from google.cloud import bigquery
 from google.cloud.bigquery import SchemaField
-# Test Change
+
 # 1. load ntd stop data
 
 ntd_stops_schema = [
