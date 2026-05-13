@@ -32,7 +32,7 @@ jobs:
       
           echo "Synchronizing notebooks using Jupytext project configurations..."
           # Uses the rules defined in pyproject.toml to ensure matching pairs exist
-          jupytext --sync $(find . -name "*.ipynb")
+          jupytext --to py:percent --opt comment_magics=false $(find . -name "*.ipynb")
           
           # 2. Ensure there are no untracked (newly generated .py files) or modified files
           # Using porcelain catches both diff changes and newly triggered files that were missing.
