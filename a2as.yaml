@@ -1,0 +1,454 @@
+manifest:
+  version: "0.1.3"
+  schema: https://a2as.org/cert/schema
+  subject:
+    name: googlecloudplatform/data-to-ai
+    source: https://github.com/googlecloudplatform/data-to-ai
+    branch: main
+    commit: "44878768"
+    scope: [agents/maintenance-scheduler/deployment/deploy.py, agents/maintenance-scheduler/maintenance_explorer/agent.py,
+      agents/maintenance-scheduler/maintenance_explorer/config.py, agents/maintenance-scheduler/maintenance_explorer/prompts.py,
+      agents/maintenance-scheduler/maintenance_explorer/tools/tools.py, agents/maintenance-scheduler/maintenance_scheduler/agent.py,
+      agents/maintenance-scheduler/maintenance_scheduler/config.py, agents/maintenance-scheduler/maintenance_scheduler/prompts.py,
+      agents/maintenance-scheduler/maintenance_scheduler/shared_libraries/callbacks.py, agents/maintenance-scheduler/maintenance_scheduler/tools/email_content_generator.py,
+      agents/maintenance-scheduler/maintenance_scheduler/tools/email_content_generator_prompts.py, agents/maintenance-scheduler/maintenance_scheduler/tools/tools.py,
+      labs/agents/adk_and_bigquery/agent.py, labs/agents/adk_and_bigquery/tools.py]
+  issued:
+    by: A2AS.org
+    at: '2026-02-11T16:33:54Z'
+    url: https://a2as.org/certified/agents/googlecloudplatform/data-to-ai
+  signatures:
+    digest: sha256:i4lGXXZ_TV6BkPnCTDlEsU6UqtNzx_g5kM77_goQUg4
+    key: ed25519:0pvF3UH56j-rRlZZX6ZPiQltH6-98yUR2JnKt2tmn_Q
+    sig: ed25519:L81HtHehddjGnRIYYK_-EGYEc56oGyZz40KYStuHywZuKcXv7wLbf1Z-J7UmCLN7wpkHA_zfj1YVBGIT7o2EAg
+
+agents:
+  email_notification_generator:
+    type: instance
+    models: [configs.email_generator_agent_settings.model]
+    params:
+      name: configs.email_generator_agent_settings.name
+      description: configs.email_generator_agent_settings.description
+      instruction: [Generate an email explaining the work that needs to be done to fix the bus stop., 'Include the bus stop
+          id, bus stop image, reason for maintenance and the time', when the maintenance needs to occur., 'Return the email
+          subject with the following structure:', 'Scheduled maintenance for bus stop #[bus_stop_id] at [scheduled_time]',
+        'Return the email body with the following structure:', 'The bus stop #[bus_stop_id] needs to be repaired based on
+          the analysis of this image:', '[image]', 'We think that the bus stop or the area around it has these problems: [reason].',
+        'The bus stop is located at [street], [city], [state] [zip].', 'If you find that this request is sent in error, please
+          contact the maintenance', team at (111)555-2222., 'Sincerely,', Automated Scheduling Assistant]
+      input_schema: MaintenanceNotification
+      output_schema: Email
+      output_key: email
+      disallow_transfer_to_parent: "True"
+      disallow_transfer_to_peers: "True"
+  root_agent.0:
+    type: instance
+    models: [gemini-2.5-flash]
+    tools: [get_latest_bus_stop_images, mcp_toolset]
+    mcp: [mcp_toolset]
+    params:
+      name: bigquery_interaction_demo_agent
+      generate_content_config:
+        ref: generate_content_config
+      description: Bus stop image analysis agent
+      instruction: [You can answer questions about bus stop images. You must use only the provided tools to answer the questions.,
+        'If you use the ask-data-insights tool, make sure to provide the table_reference parameter exactly as', 'If you use
+          the get-table-information tool, make sure to provide the dataset parameter as "multimodal".', 'If you are asked
+          to describe your capabilities, reply with some variation on the following message. Use the tone of the question
+          to generate the response.', '"I can answer questions about the bus stop images and about BigQuery tables in the
+          multimodal dataset. Try asking these questions:', '- Show the bus stop images', '- Find images containing broken
+          glass', '- What is the breakdown of bus stop cleanliness levels?', '- What tables are in the multimodal dataset?',
+        '- Who has access to the multimodal dataset?', '- What is the schema of the image_reports table?', '"']
+      planner: BuiltInPlanner
+      instance: root_agent
+  root_agent.1:
+    type: instance
+    models: [configs.root_agent_settings.model]
+    tools: [ask_lakehouse, get_image_from_bucket, analytics_chart_tool, get_external_url_image]
+    params:
+      name: maintenance_explorer
+      description: configs.root_agent_settings.description
+      global_instruction: [You are a transit supervisor responsible for monitoring bus stops in order to ensure they are safe
+          and clean for everyone., 'A bus stop is comprised of any combination of the following physical assets: a bench,
+          a sign, a shelter, and/or a trash can.', 'Constraints:', '*   **Never mention "tool_code", "tool_outputs", or "print
+          statements" to the user.** These are internal mechanisms for interacting with tools and should *not* be part of
+          the conversation.  Focus solely on providing a natural and helpful customer experience.  Do not reveal the underlying
+          implementation details.']
+      planner: BuiltInPlanner
+      instruction: [Generate an email explaining the work that needs to be done to fix the bus stop., 'Include the bus stop
+          id, bus stop image, reason for maintenance and the time', when the maintenance needs to occur., 'Return the email
+          subject with the following structure:', 'Scheduled maintenance for bus stop #[bus_stop_id] at [scheduled_time]',
+        'Return the email body with the following structure:', 'The bus stop #[bus_stop_id] needs to be repaired based on
+          the analysis of this image:', '[image]', 'We think that the bus stop or the area around it has these problems: [reason].',
+        'The bus stop is located at [street], [city], [state] [zip].', 'If you find that this request is sent in error, please
+          contact the maintenance', team at (111)555-2222., 'Sincerely,', Automated Scheduling Assistant]
+      before_agent_callback: setup_before_agent_call
+      generate_content_config:
+        class: GenerateContentConfig
+        temperature: "0.01"
+      instance: root_agent
+  root_agent.2:
+    type: instance
+    models: [configs.root_agent_settings.model]
+    tools: [get_unresolved_incidents_tool, get_expected_number_of_passengers_tool, schedule_maintenance_tool, get_current_time,
+      email_content_generator_tool, is_time_on_weekend]
+    params:
+      name: configs.root_agent_settings.name
+      generate_content_config:
+        ref: generate_content_config
+      description: configs.root_agent_settings.description
+      global_instruction: ''
+      instruction: [Generate an email explaining the work that needs to be done to fix the bus stop., 'Include the bus stop
+          id, bus stop image, reason for maintenance and the time', when the maintenance needs to occur., 'Return the email
+          subject with the following structure:', 'Scheduled maintenance for bus stop #[bus_stop_id] at [scheduled_time]',
+        'Return the email body with the following structure:', 'The bus stop #[bus_stop_id] needs to be repaired based on
+          the analysis of this image:', '[image]', 'We think that the bus stop or the area around it has these problems: [reason].',
+        'The bus stop is located at [street], [city], [state] [zip].', 'If you find that this request is sent in error, please
+          contact the maintenance', team at (111)555-2222., 'Sincerely,', Automated Scheduling Assistant]
+      planner: BuiltInPlanner
+      after_tool_callback: after_tool
+      before_model_callback: rate_limit_callback
+      instance: root_agent
+
+models:
+  configs.email_generator_agent_settings.model:
+    type: literal
+    agents: [email_notification_generator]
+  configs.root_agent_settings.model:
+    type: literal
+    agents: [root_agent.1, root_agent.2]
+  gemini-2.5-flash:
+    type: function
+    agents: [root_agent.0]
+    params:
+      wrapper: Gemini
+      model: gemini-2.5-flash
+      retry_options: retry_options
+
+tools:
+  analytics_chart_tool:
+    type: function
+    agents: [root_agent.1]
+  ask_lakehouse:
+    type: function
+    agents: [root_agent.1]
+  email_content_generator_tool:
+    type: function
+    agents: [root_agent.2]
+  get_current_time:
+    type: function
+    agents: [root_agent.2]
+    params:
+      description: |-
+        Returns current time
+
+        Returns:
+            Current time in New York, NY, USA
+
+        Example:
+            >>> get_current_time()
+            'Mon 28 Apr 2025, 12:41PM'
+  get_expected_number_of_passengers_tool:
+    type: function
+    agents: [root_agent.2]
+  get_external_url_image:
+    type: function
+    agents: [root_agent.1]
+    params:
+      description: |-
+        Retrieves the public URL of an image from a Google Cloud Storage bucket.
+
+        Args:
+            gs_uri (str): uri to the image in a bucket
+        Returns:
+            str: The public URL of the image, or an error message if not found or accessible.
+  get_image_from_bucket:
+    type: function
+    agents: [root_agent.1]
+  get_latest_bus_stop_images:
+    type: function
+    agents: [root_agent.0]
+  get_unresolved_incidents_tool:
+    type: function
+    agents: [root_agent.2]
+  is_time_on_weekend:
+    type: function
+    agents: [root_agent.2]
+    params:
+      description: |-
+        Returns:
+             a Boolean indicating if the current time is on the weekend
+  mcp_toolset:
+    type: mcp
+    agents: [root_agent.0]
+    params:
+      class: McpToolset
+      mcp_server: mcp_toolset
+  schedule_maintenance_tool:
+    type: function
+    agents: [root_agent.2]
+
+mcp:
+  forecast_passangers:
+    type: toolbox
+    url: configs.mcp_toolbox_uri
+    params:
+      class: ToolboxSyncClient
+      method: load_toolset
+      toolset: forecast_passangers
+  mcp_toolset:
+    type: network
+    url: http://127.0.0.1:5000/mcp/bus-stop-images-toolset
+    agents: [root_agent, root_agent.0]
+    params:
+      class: McpToolset
+      connection_type: StreamableHTTPConnectionParams
+      headers:
+        Authorization: Bearer your-auth-token-in-production
+
+imports:
+  AdkApp: vertexai.preview.reasoning_engines.AdkApp
+  after_tool: shared_libraries.callbacks.after_tool
+  agent: agent
+  Agent: google.adk.Agent
+  agent_engines: vertexai.agent_engines
+  agent_tool: google.adk.tools.agent_tool
+  alt: altair
+  analytics_chart_tool: tools.tools.analytics_chart_tool
+  Any: typing.Any
+  argparse: argparse
+  ask_lakehouse: tools.tools.ask_lakehouse
+  AUTONOMOUS_INSTRUCTIONS: prompts.AUTONOMOUS_INSTRUCTIONS
+  BaseModel: pydantic.BaseModel
+  BaseSettings: pydantic_settings.BaseSettings
+  BaseTool: google.adk.tools.BaseTool
+  bigquery: google.cloud.bigquery
+  Blob: google.genai.types.Blob
+  BuiltInPlanner: google.adk.planners.BuiltInPlanner
+  BusStop: maintenance_scheduler.entities.bus_stop.BusStop
+  BusStopIncident: maintenance_scheduler.entities.bus_stop.BusStopIncident
+  BytesIO: io.BytesIO
+  CallbackContext: google.adk.agents.callback_context.CallbackContext
+  ClientInfo: google.api_core.client_info.ClientInfo
+  Config: config.Config
+  data_project_id: tools.data_project_id
+  datetime: datetime.datetime
+  Dict: typing.Dict
+  Email: maintenance_scheduler.entities.notification.Email
+  email_content_generator_tool: tools.email_content_generator.email_content_generator_tool
+  Field: pydantic.Field
+  FileData: google.genai.types.FileData
+  FunctionTool: google.adk.tools.FunctionTool
+  Gemini: google.adk.models.google_llm.Gemini
+  geminidataanalytics: google.cloud.geminidataanalytics
+  get_current_time: tools.tools.get_current_time
+  get_expected_number_of_passengers_tool: tools.tools.get_expected_number_of_passengers_tool
+  get_external_url_image: tools.tools.get_external_url_image
+  get_image_from_bucket: tools.tools.get_image_from_bucket
+  get_latest_bus_stop_images: tools.get_latest_bus_stop_images
+  get_unresolved_incidents_tool: tools.tools.get_unresolved_incidents_tool
+  GLOBAL_INSTRUCTION: prompts.GLOBAL_INSTRUCTION
+  HttpRetryOptions: google.genai.types.HttpRetryOptions
+  INSTRUCTION: prompts.INSTRUCTION
+  INTERACTIVE_INSTRUCTIONS: prompts.INTERACTIVE_INSTRUCTIONS
+  io: io
+  is_time_on_weekend: tools.tools.is_time_on_weekend
+  JobCreationMode: google.cloud.bigquery.enums.JobCreationMode
+  List: typing.List
+  LlmRequest: google.adk.models.LlmRequest
+  logging: logging
+  MaintenanceNotification: maintenance_scheduler.entities.notification.MaintenanceNotification
+  mcp_toolset: tools.mcp_toolset
+  MCPToolset: google.adk.tools.mcp_tool.mcp_toolset.MCPToolset
+  McpToolset: google.adk.tools.mcp_tool.McpToolset
+  MessageToDict: google.protobuf.json_format.MessageToDict
+  NotFound: google.api_core.exceptions.NotFound
+  Optional: typing.Optional
+  os: os
+  Part: google.genai.types.Part
+  proto: proto
+  QueryJobConfig: google.cloud.bigquery.job.QueryJobConfig
+  random: random
+  rate_limit_callback: shared_libraries.callbacks.rate_limit_callback
+  re: re
+  root_agent: maintenance_scheduler.agent.root_agent
+  schedule_maintenance_tool: tools.tools.schedule_maintenance_tool
+  SettingsConfigDict: pydantic_settings.SettingsConfigDict
+  storage: google.cloud.storage
+  StreamableHTTPConnectionParams: google.adk.tools.mcp_tool.StreamableHTTPConnectionParams
+  sys: sys
+  ThinkingConfig: google.genai.types.ThinkingConfig
+  time: time
+  timedelta: datetime.timedelta
+  ToolboxSyncClient: toolbox_core.ToolboxSyncClient
+  ToolContext: google.adk.tools.ToolContext
+  tools: tools.tools
+  types: google.genai.types
+  USAddress: maintenance_scheduler.entities.bus_stop.USAddress
+  vertexai: vertexai
+  warnings: warnings
+  ZoneInfo: zoneinfo.ZoneInfo
+
+functions:
+  _convert_proto:
+    type: sync
+    module: agents.maintenance-scheduler.maintenance_explorer.tools.tools
+    args: [v]
+  add_tables:
+    type: sync
+    module: agents.maintenance-scheduler.maintenance_explorer.agent
+    args: [table_names, bq_dataset_id, billing_project]
+    params:
+      returns: None
+  after_tool:
+    type: sync
+    module: agents.maintenance-scheduler.maintenance_scheduler.shared_libraries.callbacks
+    args: [tool, args, tool_context, tool_response]
+    params:
+      returns: Optional[Dict]
+  ask_lakehouse:
+    type: async
+    module: agents.maintenance-scheduler.maintenance_explorer.tools.tools
+    args: [question, tool_context]
+    params:
+      returns: str
+  create_ca_agent:
+    type: sync
+    module: agents.maintenance-scheduler.maintenance_explorer.agent
+    args: [parent_agent_name, agent_id, agent_name, billing_project]
+    params:
+      returns: None
+  create_ca_conversation:
+    type: sync
+    module: agents.maintenance-scheduler.maintenance_explorer.agent
+    args: [agent_name, parent_agent_name, conversation_name, conversation_id]
+    params:
+      returns: None
+  get_bigquery_data_project:
+    type: sync
+    module: agents.maintenance-scheduler.maintenance_explorer.config
+    args: [self]
+    params:
+      returns: str
+  get_bigquery_run_project:
+    type: sync
+    module: agents.maintenance-scheduler.maintenance_explorer.config
+    args: [self]
+    params:
+      returns: str
+  get_current_time:
+    type: sync
+    module: agents.maintenance-scheduler.maintenance_scheduler.tools.tools
+    params:
+      returns: str
+  get_expected_number_of_passengers:
+    type: sync
+    module: agents.maintenance-scheduler.maintenance_scheduler.tools.tools
+    args: [bus_stop_ids]
+    params:
+      returns: dict
+  get_external_url_image:
+    type: sync
+    module: agents.maintenance-scheduler.maintenance_explorer.tools.tools
+    args: [gs_uri]
+    params:
+      returns: str
+  get_latest_bus_stop_images:
+    type: async
+    module: labs.agents.adk_and_bigquery.tools
+    args: [number_of_images]
+    params:
+      returns: List[BusStop]
+  get_unresolved_incidents:
+    type: async
+    module: agents.maintenance-scheduler.maintenance_scheduler.tools.tools
+    params:
+      returns: List[BusStopIncident]
+  is_time_on_weekend:
+    type: sync
+    module: agents.maintenance-scheduler.maintenance_scheduler.tools.tools
+    args: [day, month, year]
+    params:
+      returns: bool
+  lowercase_value:
+    type: sync
+    module: agents.maintenance-scheduler.maintenance_scheduler.shared_libraries.callbacks
+    args: [value]
+  query_and_save_chart:
+    type: async
+    module: agents.maintenance-scheduler.maintenance_explorer.tools.tools
+    args: [question, tool_context]
+    params:
+      returns: Dict
+  rate_limit_callback:
+    type: sync
+    module: agents.maintenance-scheduler.maintenance_scheduler.shared_libraries.callbacks
+    args: [callback_context, llm_request]
+    params:
+      returns: None
+  save_image_from_gcs:
+    type: async
+    module: agents.maintenance-scheduler.maintenance_explorer.tools.tools
+    args: [gs_uri, tool_context]
+    params:
+      returns: dict
+  schedule_maintenance:
+    type: sync
+    module: agents.maintenance-scheduler.maintenance_scheduler.tools.tools
+    args: [bus_stop_id, maintenance_start, reason, notification_subject, notification_content]
+    params:
+      returns: dict
+  setup_before_agent_call:
+    type: sync
+    module: agents.maintenance-scheduler.maintenance_explorer.agent
+    args: [callback_context]
+    params:
+      returns: None
+
+variables:
+  BIGQUERY_DATA_PROJECT_ID:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [labs.agents.adk_and_bigquery.tools]
+  BIGQUERY_RUN_PROJECT_ID:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [labs.agents.adk_and_bigquery.tools]
+
+files:
+  ../.env:
+    type: pattern
+    actions: [read]
+    params:
+      caller: [os.path.join]
+      pattern: [os.path.dirname(), ../.env]
+
+networks:
+  "127.0.0.1":
+    type: api
+    actions: [GET]
+    urls: [/, /mcp/bus-stop-images-toolset]
+    protocols: [http]
+    ports: ["5000"]
+    params:
+      links: [default, McpToolset, url]
+  storage.cloud.google.com:
+    type: api
+    actions: [GET]
+    urls: ['/{...}']
+    protocols: [https]
+    ports: ["443"]
+    params:
+      pattern: https://storage.cloud.google.com/{bucket_name}/{object_name}?authuser=1
+      caller: [get_external_url_image]
+  storage.mtls.cloud.google.com:
+    type: api
+    actions: [GET]
+    urls: ['/{...}']
+    protocols: [https]
+    ports: ["443"]
+    params:
+      caller: [get_unresolved_incidents]
+      links: [source_image_uri]
